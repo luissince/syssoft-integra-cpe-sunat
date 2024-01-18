@@ -1,0 +1,29 @@
+server {
+	listen 80 default_server;
+	listen [::]:80 default_server;
+
+	root /var/www/html/public;
+
+	# Add index.php to the list if you are using PHP
+	index index.php index.html index.htm index.nginx-debian.html;
+
+	charset utf-8;
+        gzip on;
+        gzip_types text/css application/javascript text/javascript application/x-javascript  image/svg+xml text/plain text/xsd text/xsl text/xml image/x-icon;
+
+	server_name _;
+
+	location / {
+		try_files $uri $uri/ /index.php?$query_string;
+	}
+
+	location ~ \.php$ {
+  		try_files $fastcgi_script_name =404;
+  		include fastcgi_params;
+  		fastcgi_pass  unix:/run/php/php7.4-fpm.sock;
+  		fastcgi_index index.php;
+  		fastcgi_param DOCUMENT_ROOT  $realpath_root;
+  		fastcgi_param SCRIPT_FILENAME   $realpath_root$fastcgi_script_name;
+	}
+
+}
