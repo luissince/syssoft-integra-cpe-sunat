@@ -55,6 +55,9 @@ class EmpresaCotroller extends Controller
 
                     Storage::put('certificado/private_key.pem', $privateKeyPem);
                     Storage::put('certificado/public_key.pem', $publicKeyPem);
+
+                    chmod(Storage::path('certificado/private_key.pem'), 0777);
+                    chmod(Storage::path('certificado/public_key.pem'), 0777);
                 } else {
                     throw new Exception('Error al crear las llaves del certificado.');
                 }
