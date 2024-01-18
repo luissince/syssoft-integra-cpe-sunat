@@ -1,4 +1,4 @@
 *
 !public/
-!wsdl
+!wsdl/
 !.gitignore
