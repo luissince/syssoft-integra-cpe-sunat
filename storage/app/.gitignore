@@ -1,4 +1,6 @@
 *
 !public/
 !wsdl/
+!wsdl/*.wsdl
+!wsdl/*.xsd
 !.gitignore
