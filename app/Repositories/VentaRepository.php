@@ -33,12 +33,12 @@ class VentaRepository
             m.codiso,
             m.nombre as moneda
         FROM venta AS v 
-            INNER JOIN clienteNatural AS c ON v.idCliente = c.idCliente
+            INNER JOIN persona AS c ON v.idPersona = c.idPersona
             INNER JOIN usuario AS us ON us.idUsuario = v.idUsuario 
             INNER JOIN tipoDocumento AS td ON td.idTipoDocumento = c.idTipoDocumento 
             INNER JOIN comprobante AS com ON v.idComprobante = com.idComprobante
             INNER JOIN moneda AS m ON m.idMoneda = v.idMoneda
-            INNER JOIN formaVenta  AS tv ON tv.idFormaVenta = v.idFormaVenta
+            INNER JOIN formaPago  AS tv ON tv.idFormaPago = v.idFormaPago
         WHERE 
             v.idVenta = ?", [
             $idVenta
