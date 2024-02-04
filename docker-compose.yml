@@ -21,6 +21,8 @@ services:
     container_name: sysintegra-cpe-sunat-test
     # Configuración para reiniciar siempre el contenedor
     restart: always
+    volumes:
+      - test-cpe-sunat-volumen:/var/www/html/storage/app
 
 # Definición de redes
 networks:
@@ -28,3 +30,6 @@ networks:
   luis:
     # Especifica que la red es externa (puede haber sido creada fuera de este archivo)
     external: true
+
+volumes:
+  test-cpe-sunat-volumen:
