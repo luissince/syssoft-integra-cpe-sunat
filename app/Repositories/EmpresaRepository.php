@@ -15,7 +15,9 @@ class EmpresaRepository
             e.razonSocial,
             e.nombreEmpresa,
             e.usuarioSolSunat,
-            e.claveSolSunat
+            e.claveSolSunat,
+            e.idApiSunat,
+            e.claveApiSunat
         FROM 
             empresa AS e 
         INNER JOIN 

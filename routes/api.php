@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\EmpresaCotroller;
+use App\Http\Controllers\GuiaRemisionController;
 use App\Http\Controllers\VentaController;
 use Illuminate\Support\Facades\Route;
 
@@ -20,3 +21,5 @@ Route::post("/create", [EmpresaCotroller::class, 'create']);
 Route::get("/boleta/{idVenta}",[VentaController::class, 'index']);
 
 Route::get("/resumen/{idVenta}", [VentaController::class, 'resumenDiario']);
+
+Route::get("/guiaremision/{idGuiaRemision}", [GuiaRemisionController::class, 'index']);

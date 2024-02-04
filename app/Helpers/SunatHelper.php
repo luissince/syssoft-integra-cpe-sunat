@@ -6,6 +6,7 @@ use App\Src\SoapResult;
 use App\Src\Sunat;
 use DateTime;
 use DOMDocument;
+use Dotenv\Util\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -192,6 +193,152 @@ class SunatHelper
             ];
         } else {
             return response()->json(["message" => $soapResult->getDescription()], 500);
+        }
+
+        return response()->json($responseData);
+    }
+
+    public static function sendDespatchAdvice(string $fileName, DOMDocument $xml, $idGuiaRemision, $guiaRemision, $empresa)
+    {
+        $fileNameXml  = $fileName . '.xml';
+        $path = 'files/' . $fileNameXml;
+
+        Storage::disk('public')->put($path, $xml->saveXML());
+        Sunat::signDocument($fileNameXml);
+
+        Sunat::createZip(
+            Storage::path("public/files/" . $fileName . '.zip'),
+            Storage::path("public/files/" . $fileNameXml),
+            $fileNameXml
+        );
+
+        $soapResult = new SoapResult('', $fileName);
+        $soapResult->setConfigGuiaRemision(Storage::path("public/files/" . $fileName . '.zip'));
+        $soapResult->sendGuiaRemision(
+            [
+                "NumeroDocumento" => $empresa->documento,
+                "UsuarioSol" => $empresa->usuarioSolSunat,
+                "ClaveSol" => $empresa->claveSolSunat,
+                "IdApiSunat" => $empresa->idApiSunat,
+                "ClaveApiSunat" => $empresa->claveApiSunat,
+            ],
+            [
+                "numRucEmisor" => $empresa->documento,
+                "codCpe" => $guiaRemision->codigo,
+                "numSerie" => $guiaRemision->serie,
+                "numCpe" => $guiaRemision->numeracion,
+            ]
+        );
+
+        if ($soapResult->isSuccess()) {
+            $updateData = [
+                "xmlSunat" => $soapResult->getCode(),
+                "xmlDescripcion" => $soapResult->getMessage(),
+            ];
+            if($soapResult->isAccepted()){
+                $updateData += [
+                    "xmlGenerado" => Sunat::getXmlSign(),
+                    "numeroTicketSunat" => $soapResult->getTicket()
+                ];
+            }
+
+            DB::table("guiaRemision")
+                ->where('idGuiaRemision', $idGuiaRemision)
+                ->update($updateData);
+
+            $responseData = [
+                "state" => $soapResult->isSuccess(),
+                "accept" => $soapResult->isAccepted(),
+                "code" => $soapResult->getCode(),
+                "description" => $soapResult->getMessage()
+            ];
+        } else {
+            if ($soapResult->getCode() == "1033") {
+                $updateData = [
+                    "xmlSunat" => "0",
+                    "xmlDescripcion" => $soapResult->getMessage(),
+                ];
+
+                DB::table("guiaRemision")
+                    ->where('idGuiaRemision', $idGuiaRemision)
+                    ->update($updateData);
+
+                $responseData = [
+                    "state" => false,
+                    "code" => $soapResult->getCode(),
+                    "description" => $soapResult->getMessage()
+                ];
+            } else {
+                return response()->json([
+                    "message" => $soapResult->getMessage()
+                ], 500);
+            }
+        }
+
+        return response()->json($responseData);
+    }
+
+    public static function getStatusDespatchAdvice(string $fileName, $idGuiaRemision, $guiaRemision, $empresa, $ticket)
+    {
+        $soapResult = new SoapResult('', $fileName);
+        $soapResult->setTicket($ticket);
+        $soapResult->sendGuiaRemision(
+            [
+                "NumeroDocumento" => $empresa->documento,
+                "UsuarioSol" => $empresa->usuarioSolSunat,
+                "ClaveSol" => $empresa->claveSolSunat,
+                "IdApiSunat" => $empresa->idApiSunat,
+                "ClaveApiSunat" => $empresa->claveApiSunat,
+            ],
+            [
+                "numRucEmisor" => $empresa->documento,
+                "codCpe" => $guiaRemision->codigo,
+                "numSerie" => $guiaRemision->serie,
+                "numCpe" => $guiaRemision->numeracion,
+            ]
+        );
+
+        if ($soapResult->isSuccess()) {
+            $updateData = [
+                "xmlSunat" => $soapResult->getCode(),
+                "xmlDescripcion" => $soapResult->getMessage(),
+            ];
+
+            if ($soapResult->isAccepted()) {
+                $updateData["codigoHash"] = $soapResult->getHashCode();
+            }
+
+            DB::table("guiaRemision")
+                ->where('idGuiaRemision', $idGuiaRemision)
+                ->update($updateData);
+
+            $responseData = [
+                "state" => $soapResult->isSuccess(),
+                "accept" => $soapResult->isAccepted(),
+                "code" => $soapResult->getCode(),
+                "description" => $soapResult->getMessage()
+            ];
+        } else {
+            if ($soapResult->getCode() == "1033") {
+                $updateData = [
+                    "xmlSunat" => "0",
+                    "xmlDescripcion" => $soapResult->getMessage(),
+                ];
+
+                DB::table("guiaRemision")
+                    ->where('idGuiaRemision', $idGuiaRemision)
+                    ->update($updateData);
+
+                $responseData = [
+                    "state" => false,
+                    "code" => $soapResult->getCode(),
+                    "description" => $soapResult->getMessage()
+                ];
+            } else {
+                return response()->json([
+                    "message" => $soapResult->getMessage()
+                ], 500);
+            }
         }
 
         return response()->json($responseData);

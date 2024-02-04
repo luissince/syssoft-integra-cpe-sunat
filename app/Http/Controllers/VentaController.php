@@ -29,7 +29,6 @@ class VentaController extends Controller
 
     public function index($idVenta)
     {
-        error_log($idVenta);
         $venta = $this->ventaRepository->obtenerVentaPorId($idVenta);
 
         $empresa = $this->empresaRepository->obtenerEmpresa();

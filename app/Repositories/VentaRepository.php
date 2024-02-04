@@ -33,7 +33,7 @@ class VentaRepository
             m.codiso,
             m.nombre as moneda
         FROM venta AS v 
-            INNER JOIN persona AS c ON v.idPersona = c.idPersona
+            INNER JOIN persona AS c ON v.idCliente = c.idPersona
             INNER JOIN usuario AS us ON us.idUsuario = v.idUsuario 
             INNER JOIN tipoDocumento AS td ON td.idTipoDocumento = c.idTipoDocumento 
             INNER JOIN comprobante AS com ON v.idComprobante = com.idComprobante
