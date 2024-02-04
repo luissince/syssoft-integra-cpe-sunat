@@ -41,7 +41,7 @@
                             <label class="form-text"> Razón Social: <i class="fa fa-fw fa-asterisk text-danger"></i></label>
                             <div class="form-group">
                                 <input id="txtRazonSocial" class="form-control" type="text" placeholder="Razón Social"
-                                    {{ $empresa->razonSocial }} disabled />
+                                    value="{{ $empresa->razonSocial }}" disabled />
                             </div>
                         </div>
                     </div>
