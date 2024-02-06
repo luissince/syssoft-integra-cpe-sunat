@@ -377,7 +377,7 @@ class XmlGenerator
         return $xml;
     }
 
-    public static function generateDailySummaryXml($venta, $detalle, $empresa, $correlativo, $currentDate)
+    public static function generateSummaryDocumentsXml($venta, $detalle, $empresa, $correlativo, $currentDate)
     {
         $sub_total = array_reduce($detalle, function ($acumulador, $producto) {
             $igv = floatval($producto->porcentaje) / 100.00;
@@ -563,6 +563,102 @@ class XmlGenerator
             $cbc = $xml->createElement('cbc:TaxTypeCode', 'VAT');
             $cbc = $cac_TaxScheme->appendChild($cbc);
         }
+
+        $xml->formatOutput = true;
+
+        return $xml;
+    }
+
+    public static function generateVoidedDocumentsXml($venta, $empresa, $correlativo, $currentDate)
+    {
+        $xml = new DomDocument('1.0', 'utf-8');
+        // $xml->standalone         = true;
+        $xml->preserveWhiteSpace = false;
+
+        $Invoice = $xml->createElement('VoidedDocuments');
+        $Invoice = $xml->appendChild($Invoice);
+
+        $Invoice->setAttribute('xmlns', 'urn:sunat:names:specification:ubl:peru:schema:xsd:VoidedDocuments-1');
+        $Invoice->setAttribute('xmlns:ds', 'http://www.w3.org/2000/09/xmldsig#');
+        $Invoice->setAttribute('xmlns:sac', 'urn:sunat:names:specification:ubl:peru:schema:xsd:SunatAggregateComponents-1');
+        $Invoice->setAttribute('xmlns:ext', 'urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2');
+        $Invoice->setAttribute('xmlns:cbc', 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2');
+        $Invoice->setAttribute('xmlns:cac', 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2');
+
+        $UBLExtension = $xml->createElement('ext:UBLExtensions');
+        $UBLExtension = $Invoice->appendChild($UBLExtension);
+
+        $ext = $xml->createElement('ext:UBLExtension');
+        $ext = $UBLExtension->appendChild($ext);
+        $contents = $xml->createElement('ext:ExtensionContent', ' ');
+        $contents = $ext->appendChild($contents);
+
+        $date = new DateTime($venta->fecha . "T" . $venta->hora);
+
+        //Version de UBL 2.0
+        $cbc = $xml->createElement('cbc:UBLVersionID', '2.0');
+        $cbc = $Invoice->appendChild($cbc);
+        $cbc = $xml->createElement('cbc:CustomizationID', '1.0');
+        $cbc = $Invoice->appendChild($cbc);
+        $cbc = $xml->createElement('cbc:ID', 'RA-' . $currentDate->format('Ymd') . '-' . $correlativo);
+        $cbc = $Invoice->appendChild($cbc);
+        $cbc = $xml->createElement('cbc:ReferenceDate', $date->format('Y-m-d'));
+        $cbc = $Invoice->appendChild($cbc);
+        $cbc = $xml->createElement('cbc:IssueDate', $currentDate->format('Y-m-d'));
+        $cbc = $Invoice->appendChild($cbc);
+
+        // DATOS DE FIRMA
+        $cac_signature = $xml->createElement('cac:Signature');
+        $cac_signature = $Invoice->appendChild($cac_signature);
+        $cbc = $xml->createElement('cbc:ID',  $empresa->documento);
+        $cbc = $cac_signature->appendChild($cbc);
+        $cac_signatory = $xml->createElement('cac:SignatoryParty');
+        $cac_signatory = $cac_signature->appendChild($cac_signatory);
+        $cac = $xml->createElement('cac:PartyIdentification');
+        $cac = $cac_signatory->appendChild($cac);
+        $cbc = $xml->createElement('cbc:ID',  $empresa->documento);
+        $cbc = $cac->appendChild($cbc);
+        $cac = $xml->createElement('cac:PartyName');
+        $cac = $cac_signatory->appendChild($cac);
+        $cbc = $xml->createElement('cbc:Name');
+        $cbc->appendChild($xml->createCDATASection($empresa->razonSocial));
+        $cbc = $cac->appendChild($cbc);
+        $cac = $xml->createElement('cac:ExternalReference');
+        $cac_digital = $xml->createElement('cac:DigitalSignatureAttachment');
+        $cac_digital = $cac_signature->appendChild($cac_digital);
+        $cac = $cac_digital->appendChild($cac);
+        $cbc = $xml->createElement('cbc:URI', '#SysSoftIntegra');
+        $cbc = $cac->appendChild($cbc);
+
+        // DATOS EMISOR
+        $cac_SupplierParty = $xml->createElement('cac:AccountingSupplierParty');
+        $cac_SupplierParty = $Invoice->appendChild($cac_SupplierParty);
+        $CustomerAssignedAccountID = $xml->createElement('cbc:CustomerAssignedAccountID', $empresa->documento);
+        $CustomerAssignedAccountID = $cac_SupplierParty->appendChild($CustomerAssignedAccountID);
+        $AdditionalAccountID = $xml->createElement('cbc:AdditionalAccountID', $empresa->codigo);
+        $AdditionalAccountID = $cac_SupplierParty->appendChild($AdditionalAccountID);
+        $cac_party = $xml->createElement('cac:Party');
+        $cac_party = $cac_SupplierParty->appendChild($cac_party);
+        $PartyLegalEntity = $xml->createElement('cac:PartyLegalEntity');
+        $PartyLegalEntity = $cac_party->appendChild($PartyLegalEntity);
+        $cbc = $xml->createElement('cbc:RegistrationName');
+        $cbc->appendChild($xml->createCDATASection($empresa->razonSocial));
+        $cbc = $PartyLegalEntity->appendChild($cbc);
+
+        // DOCUMENTO ASOCIADO
+        $VoidedDocumentsLine = $xml->createElement('sac:VoidedDocumentsLine');
+        $VoidedDocumentsLine = $Invoice->appendChild($VoidedDocumentsLine);
+        $LineID = $xml->createElement('cbc:LineID', '1');
+        $LineID = $VoidedDocumentsLine->appendChild($LineID);
+        $DocumentTypeCode = $xml->createElement('cbc:DocumentTypeCode', $venta->codigoVenta);
+        $DocumentTypeCode = $VoidedDocumentsLine->appendChild($DocumentTypeCode);
+        $DocumentSerialID = $xml->createElement('sac:DocumentSerialID', $venta->serie);
+        $DocumentSerialID = $VoidedDocumentsLine->appendChild($DocumentSerialID);
+        $DocumentNumberID = $xml->createElement('sac:DocumentNumberID', $venta->numeracion);
+        $DocumentNumberID = $VoidedDocumentsLine->appendChild($DocumentNumberID);
+        $VoidReasonDescription = $xml->createElement('sac:VoidReasonDescription');
+        $VoidReasonDescription->appendChild($xml->createCDATASection("ERROR EN EL SISTEMA"));
+        $VoidReasonDescription = $VoidedDocumentsLine->appendChild($VoidReasonDescription);
 
         $xml->formatOutput = true;
 
@@ -921,25 +1017,25 @@ class XmlGenerator
             $cbc = $xml->createElement('cbc:DeliveredQuantity', $value->cantidad);
             $cbc->setAttribute('unitCode', $value->codigoMedida);
             $cbc = $cac_despatch_line->appendChild($cbc);
-        
+
             $cac_order_line_reference = $xml->createElement('cac:OrderLineReference');
             $cbc = $xml->createElement('cbc:LineID', $index);
             $cbc = $cac_order_line_reference->appendChild($cbc);
             $cac_order_line_reference = $cac_despatch_line->appendChild($cac_order_line_reference);
-        
+
             $cac_item = $xml->createElement('cac:Item');
             $cbc = $xml->createElement('cbc:Description');
             $cbc->appendChild($xml->createCDATASection($value->nombre));
             $cbc = $cac_item->appendChild($cbc);
-        
+
             $cac_sellers_item_identification = $xml->createElement('cac:SellersItemIdentification');
             $cbc = $xml->createElement('cbc:ID', $value->idProducto);
             $cbc = $cac_sellers_item_identification->appendChild($cbc);
             $cac_sellers_item_identification = $cac_item->appendChild($cac_sellers_item_identification);
-        
+
             $cac_item = $cac_despatch_line->appendChild($cac_item);
             $cac_despatch_line = $Invoice->appendChild($cac_despatch_line);
-        }   
+        }
 
         //CREAR ARCHIVO
         $xml->formatOutput = true;

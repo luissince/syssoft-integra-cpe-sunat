@@ -155,10 +155,10 @@ class SunatHelper
         return response()->json($responseData);
     }
 
-    public static function getStatusToSunat($idVenta, $venta, $empresa)
+    public static function getStatusToSunat($idVenta, $venta, $empresa, $fileName)
     {
-        $date = new DateTime($venta->fechaCorrelativo);
-        $fileName = $empresa->documento . '-RC-' . $date->format('Ymd') . '-' . $venta->correlativo;
+        // $date = new DateTime($venta->fechaCorrelativo);
+        // $fileName = $empresa->documento . '-RC-' . $date->format('Ymd') . '-' . $venta->correlativo;
 
         $soapResult = new SoapResult(Storage::path('wsdl/billService.wsdl'), $fileName);
         $soapResult->setTicket($venta->ticketConsultaSunat);

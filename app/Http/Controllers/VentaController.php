@@ -27,7 +27,7 @@ class VentaController extends Controller
         $this->sucursalRepository = $sucursalRepository;
     }
 
-    public function index($idVenta)
+    public function index(string $idVenta)
     {
         $venta = $this->ventaRepository->obtenerVentaPorId($idVenta);
 
@@ -44,30 +44,56 @@ class VentaController extends Controller
         return SunatHelper::sendBillToSunat($fileName, $xml, $idVenta, $empresa);
     }
 
-    public function resumenDiario($idVenta)
+    public function resumenDiario(string $idVenta)
     {
 
         $venta = $this->ventaRepository->obtenerVentaPorId($idVenta);
 
         $empresa = $this->empresaRepository->obtenerEmpresa();
 
-        if($venta->ticketConsultaSunat != ''){
-            return SunatHelper::getStatusToSunat( $idVenta, $venta, $empresa);
+        $correlativoActual = $this->ventaRepository->obteneCorrelativoResumenDiario();
+
+        $currentDate = new DateTime('now');
+
+        $fileName = $empresa->documento . '-RC-' . $currentDate->format('Ymd') . '-' . $correlativoActual;
+
+        if ($venta->ticketConsultaSunat != '') {
+            return SunatHelper::getStatusToSunat($idVenta, $venta, $empresa, $fileName);
         }
 
         $detalle = $this->ventaRepository->obtenerDetalleVentaPorId($idVenta);
 
-        $correlativoActual = $this->ventaRepository->obteneCorrelativoResumenDiario();
-
         $correlativo = ($correlativoActual === 0) ? (intval($correlativoActual) + 1) : ($correlativoActual + 1);
 
-        $currentDate = new DateTime('now');
-
-        $xml = XmlGenerator::generateDailySummaryXml($venta, $detalle, $empresa, $correlativo, $currentDate);
+        $xml = XmlGenerator::generateSummaryDocumentsXml($venta, $detalle, $empresa, $correlativo, $currentDate);
 
         $fileName = $empresa->documento . '-RC-' . $currentDate->format('Ymd') . '-' . $correlativo;
 
         return SunatHelper::sendSumaryToSunat($fileName, $xml, $idVenta, $empresa, $correlativo, $currentDate);
     }
+
+    public function comunicacionDeBaja(string $idVenta)
+    {
+        $venta = $this->ventaRepository->obtenerVentaPorId($idVenta);
+
+        $empresa = $this->empresaRepository->obtenerEmpresa();
+
+        $correlativoActual = $this->ventaRepository->obteneCorrelativoResumenDiario();
+
+        $currentDate = new DateTime('now');
+
+        $fileName = $empresa->documento . '-RA-' . $currentDate->format('Ymd') . '-' . $correlativoActual;
+
+        if ($venta->ticketConsultaSunat != '') {
+            return SunatHelper::getStatusToSunat($idVenta, $venta, $empresa, $fileName);
+        }
+
+        $correlativo = ($correlativoActual === 0) ? (intval($correlativoActual) + 1) : ($correlativoActual + 1);
+
+        $xml = XmlGenerator::generateVoidedDocumentsXml($venta, $empresa, $correlativo, $currentDate);
+
+        $fileName = $empresa->documento . '-RA-' . $currentDate->format('Ymd') . '-' . $correlativo;
+
+        return SunatHelper::sendSumaryToSunat($fileName, $xml, $idVenta, $empresa, $correlativo, $currentDate);
+    }
 }
- 

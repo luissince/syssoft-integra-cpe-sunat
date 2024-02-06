@@ -182,7 +182,7 @@ class SoapResult
                 $this->setAccepted(true);
                 $this->setSuccess(true);
                 $this->setTicket($ticket);
-                $this->setDescription("Resumen o Comunicación de baja aceptada, consulte el estado en un par de minutos.");
+                $this->setDescription("Resumen diario o Comunicación de baja aceptada, consulte el estado en un par de minutos.");
             } else {
                 $this->setAccepted(false);
                 $this->setSuccess(true);
