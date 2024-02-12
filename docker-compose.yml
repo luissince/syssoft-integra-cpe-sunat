@@ -43,7 +43,7 @@ services:
     # Configuración para reiniciar siempre el contenedor
     restart: always
     volumes:
-      - legrand-tiquepos-sunat-volumen:/var/www/html/storage/app
+      - legrand-tiquepos-cpe-sunat-volumen:/var/www/html/storage/app
 
 # Definición de redes
 networks:
@@ -54,4 +54,4 @@ networks:
 
 volumes:
   test-cpe-sunat-volumen:
-  legrand-tiquepos-sunat-volumen:
+  legrand-tiquepos-cpe-sunat-volumen:
