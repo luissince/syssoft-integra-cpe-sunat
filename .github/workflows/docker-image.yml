@@ -29,8 +29,6 @@ jobs:
 
       - name: Configurar valores en .env
         run: |
-          sed -i 's/^APP_DEBUG=.*/APP_DEBUG=${{env.APP_DEBUG}}/' .env
-          sed -i 's/^APP_ENV=.*/APP_ENV=${{env.APP_ENV}}/' .env
           sed -i "s~DB_DATABASE = \"\"~DB_DATABASE = \"$DB_DATABASE\"~" .env
           sed -i "s~DB_HOST = \"\"~DB_HOST = \"$DB_HOST\"~" .env
           sed -i "s~DB_PASSWORD = \"\"~DB_PASSWORD = \"$DB_PASSWORD\"~" .env
