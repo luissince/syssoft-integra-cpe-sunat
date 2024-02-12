@@ -5,7 +5,10 @@ server {
 	root /var/www/html/public;
 
 	# Add index.php to the list if you are using PHP
-	index index.php index.html index.htm index.nginx-debian.html;
+	index index.php;
+
+	add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-Content-Type-Options "nosniff";
 
 	charset utf-8;
         gzip on;
@@ -17,13 +20,16 @@ server {
 		try_files $uri $uri/ /index.php?$query_string;
 	}
 
+	location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt  { access_log off; log_not_found off; }
+
 	location ~ \.php$ {
   		try_files $fastcgi_script_name =404;
   		include fastcgi_params;
-  		fastcgi_pass  unix:/run/php/php7.4-fpm.sock;
+  		fastcgi_pass unix:/run/php/php7.4-fpm.sock;
   		fastcgi_index index.php;
-  		fastcgi_param DOCUMENT_ROOT  $realpath_root;
-  		fastcgi_param SCRIPT_FILENAME   $realpath_root$fastcgi_script_name;
+  		fastcgi_param DOCUMENT_ROOT $realpath_root;
+  		fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
 	}
 
 }
