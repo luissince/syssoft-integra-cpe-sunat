@@ -29,8 +29,10 @@ class EmpresaCotroller extends Controller
         LIMIT 1");
 
         $tipo = env('APP_ENV');
+        $dataBase = env('DB_DATABASE');
 
-        Log::info('Esta cargando la variable  de entorno: ' . $tipo);
+        Log::info('Esta cargando la variable  de entorno tipo: ' . $tipo);
+        Log::info('Esta cargando la variable  de entorno database: ' . $dataBase);
 
         return view('welcome', ["empresa" => $empresa[0], "tipo"=>$tipo]);
     }
