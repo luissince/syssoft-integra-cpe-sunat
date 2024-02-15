@@ -140,6 +140,13 @@
                             value="{{ env('APP_ENV') }}" disabled />
                     </div>
                 </div>
+                <div class="col-md-6">
+                    <label class="form-text"> Ruta del certificado:</label>
+                    <div class="form-group">
+                        <input id="txtNumDocumento" class="form-control" type="text" placeholder="Sin ruta"
+                            value="{{ !is_null($empresa->certificadoSunat) ? Storage::path($empresa->certificadoSunat) : '' }}" disabled />
+                    </div>
+                </div>
 
             </div>
 
@@ -152,8 +159,9 @@
                 </div>
                 <div class="col-md-6">
                     <div class="form-group text-right">
-                        <button class="btn btn-success" type="button" id="btnGuardar"><i class="fa fa-save"></i>
-                            Guardar</button>
+                        <button class="btn btn-success" type="button" id="btnGuardar">
+                            <i class="fa fa-save"></i> Guardar
+                        </button>
                     </div>
                 </div>
             </div>
