@@ -31,7 +31,13 @@ class SunatHelper
             $fileNameXml
         );
 
-        $soapResult = new SoapResult(Storage::path('wsdl/billService.wsdl'), $fileName);
+        if (env('APP_ENV') === "local") {
+            $wdsl = Storage::path('wsdl/desarrollo/billService.wsdl');
+        } else {
+            $wdsl = Storage::path('wsdl/produccion/billService.wsdl');
+        }
+
+        $soapResult = new SoapResult($wdsl, $fileName);
         $soapResult->sendBill(Sunat::xmlSendBill(
             $empresa->documento,
             $empresa->usuarioSolSunat,
@@ -103,7 +109,13 @@ class SunatHelper
             $fileNameXml
         );
 
-        $soapResult = new SoapResult(Storage::path('wsdl/billService.wsdl'), $fileName);
+        if (env('APP_ENV') === "local") {
+            $wdsl = Storage::path('wsdl/desarrollo/billService.wsdl');
+        } else {
+            $wdsl = Storage::path('wsdl/produccion/billService.wsdl');
+        }
+
+        $soapResult = new SoapResult($wdsl, $fileName);
         $soapResult->sendSumary(Sunat::xmlSendSummary(
             $empresa->documento,
             $empresa->usuarioSolSunat,
@@ -157,10 +169,13 @@ class SunatHelper
 
     public static function getStatusToSunat($idVenta, $venta, $empresa, $fileName)
     {
-        // $date = new DateTime($venta->fechaCorrelativo);
-        // $fileName = $empresa->documento . '-RC-' . $date->format('Ymd') . '-' . $venta->correlativo;
+        if (env('APP_ENV') === "local") {
+            $wdsl = Storage::path('wsdl/desarrollo/billService.wsdl');
+        } else {
+            $wdsl = Storage::path('wsdl/produccion/billService.wsdl');
+        }
 
-        $soapResult = new SoapResult(Storage::path('wsdl/billService.wsdl'), $fileName);
+        $soapResult = new SoapResult($wdsl, $fileName);
         $soapResult->setTicket($venta->ticketConsultaSunat);
         $soapResult->sendGetStatus(Sunat::xmlGetStatus(
             $empresa->documento,
@@ -235,7 +250,7 @@ class SunatHelper
                 "xmlSunat" => $soapResult->getCode(),
                 "xmlDescripcion" => $soapResult->getMessage(),
             ];
-            if($soapResult->isAccepted()){
+            if ($soapResult->isAccepted()) {
                 $updateData += [
                     "xmlGenerado" => Sunat::getXmlSign(),
                     "numeroTicketSunat" => $soapResult->getTicket()

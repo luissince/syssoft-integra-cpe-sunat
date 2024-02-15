@@ -3,4 +3,10 @@
 !wsdl/
 !wsdl/*.wsdl
 !wsdl/*.xsd
+!wsdl/desarrollo/
+!wsdl/desarrollo/*.wsdl
+!wsdl/desarrollo/*.xsd
+!wsdl/produccion/
+!wsdl/produccion/*.wsdl
+!wsdl/produccion/*.xsd
 !.gitignore

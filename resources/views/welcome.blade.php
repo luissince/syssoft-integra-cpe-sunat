@@ -132,6 +132,18 @@
             </div>
 
             <div class="row">
+
+                <div class="col-md-6">
+                    <label class="form-text"> Tipo de Envío:</label>
+                    <div class="form-group">
+                        <input id="txtNumDocumento" class="form-control" type="text" placeholder="R.U.C."
+                            value="{{ env('APP_ENV') }}" disabled />
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">
                         <label class="form-text text-left text-danger">Todos los campos marcados con <i
