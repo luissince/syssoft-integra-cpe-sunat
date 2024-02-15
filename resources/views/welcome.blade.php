@@ -136,8 +136,8 @@
                 <div class="col-md-6">
                     <label class="form-text"> Tipo de Envío:</label>
                     <div class="form-group">
-                        <input id="txtNumDocumento" class="form-control" type="text" placeholder="R.U.C."
-                            value="{{ env('APP_ENV') }}" disabled />
+                        <input id="txtNumDocumento" class="form-control" type="text" placeholder="local o produccion"
+                            value="{{ $tipo }}" disabled />
                     </div>
                 </div>
                 <div class="col-md-6">

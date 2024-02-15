@@ -7,6 +7,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class EmpresaCotroller extends Controller
 {
@@ -26,7 +27,12 @@ class EmpresaCotroller extends Controller
         FROM 
             empresa 
         LIMIT 1");
-        return view('welcome', ["empresa" => $empresa[0]]);
+
+        $tipo = env('APP_ENV');
+
+        Log::info('Esta cargando la variable  de entorno: ' . $tipo);
+
+        return view('welcome', ["empresa" => $empresa[0], "tipo"=>$tipo]);
     }
 
     public function create(Request $request){
