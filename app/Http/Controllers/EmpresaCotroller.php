@@ -28,6 +28,7 @@ class EmpresaCotroller extends Controller
         FROM 
             empresa 
         LIMIT 1");
+        
         return view('welcome', ["empresa" => $empresa[0]]);
     }
 
