@@ -66,6 +66,27 @@ services:
     volumes:
       - raices-cpe-sunat-volumen:/var/www/html/storage/app
 
+  # Servicio para la aplicación de legrand 
+  felicitygirls-tiquepos-cpe-sunat-services:
+    # Configuración para construir la imagen del contenedor
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Nombre de la imagen resultante
+    image: felicitygirls-tiquepos-cpe-sunat-image
+    # Conexión a la red llamada 'luis'
+    networks:
+      - luis
+    # Mapeo de puertos: Mapea el puerto 6013 del host al puerto 80 del contenedor
+    ports:
+      - 6021:80
+    # Nombre del contenedor
+    container_name: felicitygirls-tiquepos-cpe-sunat
+    # Configuración para reiniciar siempre el contenedor
+    restart: always
+    volumes:
+      - felicitygirls-tiquepos-sunat-volumen:/var/www/html/storage/app
+
 # Definición de redes
 networks:
   # Definición de la red llamada 'luis'
@@ -77,3 +98,4 @@ volumes:
   test-cpe-sunat-volumen:
   legrand-tiquepos-cpe-sunat-volumen:
   raices-cpe-sunat-volumen:
+  felicitygirls-tiquepos-sunat-volumen:
