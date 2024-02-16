@@ -72,7 +72,6 @@
             </div>
 
             <div class="row">
-
                 <div class="col-md-6">
                     <label class="form-text">Id (Api Sunat):</label>
                     <div class="form-group">
@@ -94,11 +93,9 @@
                         </div>
                     </div>
                 </div>
-
             </div>
 
             <div class="row">
-
                 <div class="col-md-6">
                     <label class="form-text"> Seleccionar Archivo (.p12, .pfx u otros):</label>
                     <div class="form-group d-flex">
@@ -128,16 +125,14 @@
                         </div>
                     </div>
                 </div>
-
             </div>
 
             <div class="row">
-
                 <div class="col-md-6">
-                    <label class="form-text"> Tipo de Envío:</label>
-                    <div class="form-group">
-                        <input id="txtNumDocumento" class="form-control" type="text" placeholder="local o produccion"
-                            value="{{ $tipo }}" disabled />
+                    <label class="form-text">Tipo de Envío:</label>
+                    <div class="form-group mt-3">
+                        <input id="cbSelectTipoEnvio" type="checkbox" {{ $empresa->tipoEnvio === 1 ? 'checked' : '' }}>
+                        <label for="cbSelectTipoEnvio" class="m-0">Producción o Desarrollo</label>
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -148,7 +143,6 @@
                             disabled />
                     </div>
                 </div>
-
             </div>
 
             <div class="row">
@@ -190,6 +184,8 @@
         let txtClaveCertificado = $("#txtClaveCertificado");
         let txtIdApiSunat = $("#txtIdApiSunat");
         let txtClaveApiSunat = $("#txtClaveApiSunat");
+        let cbTipoEnvio = $("#cbSelectTipoEnvio");
+
         $(document).ready(function() {
 
             $("#fileCertificado").on('change', function(event) {
@@ -253,6 +249,7 @@
             formData.append("txtClaveCertificado", txtClaveCertificado.val());
             formData.append("txtIdApiSunat", txtIdApiSunat.val());
             formData.append("txtClaveApiSunat", txtClaveApiSunat.val());
+            formData.append("cbSelectTipoEnvio", cbTipoEnvio[0].checked);
 
             tools.ModalDialog("Mi Empresa", "¿Está seguro de continuar?", function(accept) {
                 if (accept) {

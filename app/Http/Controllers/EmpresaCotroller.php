@@ -23,18 +23,12 @@ class EmpresaCotroller extends Controller
             certificadoSunat,
             claveCertificadoSunat,
             idApiSunat,
-            claveApiSunat
+            claveApiSunat,
+            tipoEnvio
         FROM 
             empresa 
         LIMIT 1");
-
-        $tipo = env('APP_ENV');
-        $dataBase = env('DB_DATABASE');
-
-        Log::info('Esta cargando la variable  de entorno tipo: ' . $tipo);
-        Log::info('Esta cargando la variable  de entorno database: ' . $dataBase);
-
-        return view('welcome', ["empresa" => $empresa[0], "tipo"=>$tipo]);
+        return view('welcome', ["empresa" => $empresa[0]]);
     }
 
     public function create(Request $request){
@@ -69,7 +63,7 @@ class EmpresaCotroller extends Controller
                 } else {
                     throw new Exception('Error al crear las llaves del certificado.');
                 }
-            } elseif ($request->input('certificadoType') == 2 && $request->filled('certificadoUrl')) {
+            } else {
                 $path = $request->input('certificadoUrl');
             } 
 
@@ -82,6 +76,7 @@ class EmpresaCotroller extends Controller
                     'claveCertificadoSunat' => $request->input('txtClaveCertificado'),
                     'idApiSunat' => $request->input('txtIdApiSunat'),
                     'claveApiSunat' => $request->input('txtClaveApiSunat'),
+                    'tipoEnvio'=> ($request->input('cbSelectTipoEnvio') === "true")
                 ]);
 
             DB::commit();

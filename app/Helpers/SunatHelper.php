@@ -31,7 +31,7 @@ class SunatHelper
             $fileNameXml
         );
 
-        if (env('APP_ENV') === "local") {
+        if (DB::table('empresa')->where('tipoEnvio', 1)->get()->isEmpty()) {
             $wdsl = Storage::path('wsdl/desarrollo/billService.wsdl');
         } else {
             $wdsl = Storage::path('wsdl/produccion/billService.wsdl');
@@ -109,7 +109,7 @@ class SunatHelper
             $fileNameXml
         );
 
-        if (env('APP_ENV') === "local") {
+        if (DB::table('empresa')->where('tipoEnvio', 1)->get()->isEmpty()) {
             $wdsl = Storage::path('wsdl/desarrollo/billService.wsdl');
         } else {
             $wdsl = Storage::path('wsdl/produccion/billService.wsdl');
@@ -169,7 +169,7 @@ class SunatHelper
 
     public static function getStatusToSunat($idVenta, $venta, $empresa, $fileName)
     {
-        if (env('APP_ENV') === "local") {
+        if (DB::table('empresa')->where('tipoEnvio', 1)->get()->isEmpty()) {
             $wdsl = Storage::path('wsdl/desarrollo/billService.wsdl');
         } else {
             $wdsl = Storage::path('wsdl/produccion/billService.wsdl');
