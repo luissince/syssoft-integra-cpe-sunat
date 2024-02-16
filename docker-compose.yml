@@ -31,7 +31,7 @@ services:
       context: .
       dockerfile: Dockerfile
     # Nombre de la imagen resultante
-    image: sysintegra-cpe-sunat-image
+    image: legrand-tiquepos-cpe-sunat-image
     # Conexión a la red llamada 'luis'
     networks:
       - luis
@@ -52,7 +52,7 @@ services:
       context: .
       dockerfile: Dockerfile
     # Nombre de la imagen resultante
-    image: sysintegra-cpe-sunat-image
+    image: raices-cpe-sunat-image
     # Conexión a la red llamada 'luis'
     networks:
       - luis
