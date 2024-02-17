@@ -85,7 +85,7 @@ services:
     # Configuración para reiniciar siempre el contenedor
     restart: always
     volumes:
-      - felicitygirls-tiquepos-sunat-volumen:/var/www/html/storage/app/files
+      - felicitygirls-tiquepos-cpe-sunat-volumen:/var/www/html/storage/app/files
 
   # Servicio para la aplicación de legrand 
   bodega-modelo-cpe-sunat-services:
