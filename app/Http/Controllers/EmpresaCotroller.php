@@ -33,6 +33,8 @@ class EmpresaCotroller extends Controller
             if ($request->input('certificadoType') == 1 && $request->hasFile('certificado')) {
                 $certificado = $request->file('certificado');
 
+                chmod(Storage::put("files"),0777);
+
                 $ext = $certificado->getClientOriginalExtension();
                 $file_path = $request->input('txtNumDocumento') . "." . $ext;
                 $path = "files/certificado/" . $file_path;

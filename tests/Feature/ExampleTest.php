@@ -18,4 +18,26 @@ class ExampleTest extends TestCase
 
         $response->assertStatus(200);
     }
+
+    /**
+     * Prueba para la ruta de la guía de remisión.
+     *
+     * @return void
+     */
+    public function testGuiaRemisionRoute()
+    {
+        // Envía una solicitud GET a la ruta de la guía de remisión
+        $response = $this->get('/api/guiaremision/GR0004');
+
+        // Verifica que la respuesta sea exitosa (código 200)
+        $response->assertStatus(200);
+
+        // Verifica que la respuesta JSON sea exactamente la esperada
+        $response->assertExactJson([
+            "state" => true,
+            "accept" => true,
+            "code" => "0",
+            "description" => "ACEPTADA"
+        ]);
+    }
 }
