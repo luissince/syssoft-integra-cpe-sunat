@@ -34,6 +34,9 @@ RUN apt install -y supervisor
 # Copiar el archivo de configuración de supervisord
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
+# Establecer los permisos adecuados para la carpeta de archivos
+RUN chmod -R 777 storage/app/files
+
 EXPOSE 80
 
 CMD ["/usr/bin/supervisord"]
