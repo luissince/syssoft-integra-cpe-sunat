@@ -67,15 +67,15 @@ class SoapResult
 
             $cdr = base64_decode($response);
             // $archivo = fopen('../files/R-' . $this->filename . '.zip', 'w+');
-            $archivo = fopen(Storage::path("public/files/R-" . $this->filename . '.zip'), 'w+');
+            $archivo = fopen(Storage::path("files/sunat/R-" . $this->filename . '.zip'), 'w+');
             fputs($archivo, $cdr);
             fclose($archivo);
             // chmod('../files/R-' . $this->filename . '.zip', 0777);
 
             // $isExtract = Sunat::extractZip('../files/R-' . $this->filename . '.zip', '../files/');
             $isExtract = Sunat::extractZip(
-                Storage::path("public/files/R-" . $this->filename . '.zip'),
-                Storage::path("public/files/")
+                Storage::path("files/sunat/R-" . $this->filename . '.zip'),
+                Storage::path("files/sunat/")
             );
 
             if (!$isExtract) {
@@ -83,7 +83,7 @@ class SoapResult
             }
 
             // $xml = file_get_contents('../files/R-' . $this->filename . '.xml');
-            $xml = Storage::get('public/files/R-' . $this->filename . '.xml');
+            $xml = Storage::get('files/sunat/R-' . $this->filename . '.xml');
             $DOM = new DOMDocument('1.0', 'utf-8');
             $DOM->preserveWhiteSpace = FALSE;
             $DOM->loadXML($xml);
@@ -114,11 +114,11 @@ class SoapResult
             //     unlink('../files/R-' . $this->filename . '.zip');
             // }
 
-            if (file_exists(Storage::path("public/files/" . $this->filename . '.zip'))) {
-                unlink(Storage::path("public/files/" . $this->filename . '.zip'));
+            if (file_exists(Storage::path("files/sunat/" . $this->filename . '.zip'))) {
+                unlink(Storage::path("files/sunat/" . $this->filename . '.zip'));
             }
-            if (file_exists(Storage::path("public/files/R-" . $this->filename . '.zip'))) {
-                unlink(Storage::path("public/files/R-" . $this->filename . '.zip'));
+            if (file_exists(Storage::path("files/sunat/R-" . $this->filename . '.zip'))) {
+                unlink(Storage::path("files/sunat/R-" . $this->filename . '.zip'));
             }
 
             if ($code == "0") {
@@ -131,11 +131,11 @@ class SoapResult
             $this->setHashCode($hashCode);
             $this->setSuccess(true);
         } catch (SoapFault $ex) {
-            if (file_exists(Storage::path("public/files/" . $this->filename . '.xml'))) {
-                unlink(Storage::path("public/files/" . $this->filename . '.xml'));
+            if (file_exists(Storage::path("files/sunat/" . $this->filename . '.xml'))) {
+                unlink(Storage::path("files/sunat/" . $this->filename . '.xml'));
             }
-            if (file_exists(Storage::path("public/files/" . $this->filename . '.zip'))) {
-                unlink(Storage::path("public/files/" . $this->filename . '.zip'));
+            if (file_exists(Storage::path("files/sunat/" . $this->filename . '.zip'))) {
+                unlink(Storage::path("files/sunat/" . $this->filename . '.zip'));
             }
 
             $code = preg_replace('/[^0-9]/', '', $ex->faultcode);
@@ -144,14 +144,14 @@ class SoapResult
             $this->setCode($code);
             $this->setDescription($message);
         } catch (Exception $ex) {
-            if (file_exists(Storage::path('public/files/' . $this->filename . '.xml'))) {
-                unlink(Storage::path('public/files/' . $this->filename . '.xml'));
+            if (file_exists(Storage::path('files/sunat/' . $this->filename . '.xml'))) {
+                unlink(Storage::path('files/sunat/' . $this->filename . '.xml'));
             }
-            if (file_exists(Storage::path('public/files/' . $this->filename . '.zip'))) {
-                unlink(Storage::path('public/files/' . $this->filename . '.zip'));
+            if (file_exists(Storage::path('files/sunat/' . $this->filename . '.zip'))) {
+                unlink(Storage::path('files/sunat/' . $this->filename . '.zip'));
             }
-            if (file_exists(Storage::path('public/files/R-' . $this->filename . '.zip'))) {
-                unlink(Storage::path('public/files/R-' . $this->filename . '.zip'));
+            if (file_exists(Storage::path('files/sunat/R-' . $this->filename . '.zip'))) {
+                unlink(Storage::path('files/sunat/R-' . $this->filename . '.zip'));
             }
 
             $this->setSuccess(false);
@@ -229,22 +229,22 @@ class SoapResult
             if ($statusCode == "0") {
                 $cdr = base64_decode($content);
                 // $archivo = fopen('../files/R-' . $this->filename . '.zip', 'w+');
-                $archivo = fopen(Storage::path("public/files/R-" . $this->filename . '.zip'), 'w+');
+                $archivo = fopen(Storage::path("files/sunat/R-" . $this->filename . '.zip'), 'w+');
                 fputs($archivo, $cdr);
                 fclose($archivo);
                 // chmod('../files/R-' . $this->filename . '.zip', 0777);
 
                 // $isExtract = Sunat::extractZip('../files/R-' . $this->filename . '.zip', '../files/');
                 $isExtract = Sunat::extractZip(
-                    Storage::path("public/files/R-" . $this->filename . '.zip'),
-                    Storage::path("public/files/")
+                    Storage::path("files/sunat/R-" . $this->filename . '.zip'),
+                    Storage::path("files/sunat/")
                 );
                 if (!$isExtract) {
                     throw new Exception("No se pudo extraer el contenido del archivo zip.");
                 }
 
                 // $xml = file_get_contents('../files/R-' . $this->filename . '.xml');
-                $xml = Storage::get('public/files/R-' . $this->filename . '.xml');
+                $xml = Storage::get('files/sunat/R-' . $this->filename . '.xml');
                 $DOM = new DOMDocument('1.0', 'utf-8');
                 $DOM->preserveWhiteSpace = FALSE;
                 $DOM->loadXML($xml);
@@ -275,22 +275,22 @@ class SoapResult
 
                 $cdr = base64_decode($content);
                 // $archivo = fopen('../files/R-' . $this->filename . '.zip', 'w+');
-                $archivo = fopen(Storage::path("public/files/R-" . $this->filename . '.zip'), 'w+');
+                $archivo = fopen(Storage::path("files/sunat/R-" . $this->filename . '.zip'), 'w+');
                 fputs($archivo, $cdr);
                 fclose($archivo);
                 // chmod('../files/R-' . $this->filename . '.zip', 0777);
 
                 // $isExtract = Sunat::extractZip('../files/R-' . $this->filename . '.zip', '../files/');
                 $isExtract = Sunat::extractZip(
-                    Storage::path("public/files/R-" . $this->filename . '.zip'),
-                    Storage::path("public/files/")
+                    Storage::path("files/sunat/R-" . $this->filename . '.zip'),
+                    Storage::path("files/sunat/")
                 );
                 if (!$isExtract) {
                     throw new Exception("No se pudo extraer el contenido del archivo zip.");
                 }
 
                 // $xml = file_get_contents('../files/R-' . $this->filename . '.xml');
-                $xml = Storage::get('public/files/R-' . $this->filename . '.xml');
+                $xml = Storage::get('files/sunat/R-' . $this->filename . '.xml');
                 $DOM = new DOMDocument('1.0', 'utf-8');
                 $DOM->preserveWhiteSpace = FALSE;
                 $DOM->loadXML($xml);
@@ -318,11 +318,11 @@ class SoapResult
                 $this->setAccepted(false);
             }
         } catch (SoapFault $ex) {
-            if (file_exists(Storage::path("public/files/" . $this->filename . '.xml'))) {
-                unlink(Storage::path("public/files/" .  $this->filename . '.xml'));
+            if (file_exists(Storage::path("files/sunat/" . $this->filename . '.xml'))) {
+                unlink(Storage::path("files/sunat/" .  $this->filename . '.xml'));
             }
-            if (file_exists(Storage::path("public/files/" . $this->filename . '.zip'))) {
-                unlink(Storage::path("public/files/" . $this->filename . '.zip'));
+            if (file_exists(Storage::path("files/sunat/" . $this->filename . '.zip'))) {
+                unlink(Storage::path("files/sunat/" . $this->filename . '.zip'));
             }
             $code = preg_replace('/[^0-9]/', '', $ex->faultcode);
             $message = $ex->faultstring;
@@ -339,14 +339,14 @@ class SoapResult
             // if (file_exists('../files/R-' . $this->filename . '.zip')) {
             //     unlink('../files/R-' . $this->filename . '.zip');
             // }
-            if (file_exists(Storage::path("public/files/" . $this->filename . '.xml'))) {
-                unlink(Storage::path("public/files/" . $this->filename . '.xml'));
+            if (file_exists(Storage::path("files/sunat/" . $this->filename . '.xml'))) {
+                unlink(Storage::path("files/sunat/" . $this->filename . '.xml'));
             }
-            if (file_exists(Storage::path("public/files/" . $this->filename . '.zip'))) {
-                unlink(Storage::path("public/files/" . $this->filename . '.zip'));
+            if (file_exists(Storage::path("files/sunat/" . $this->filename . '.zip'))) {
+                unlink(Storage::path("files/sunat/" . $this->filename . '.zip'));
             }
-            if (file_exists(Storage::path("public/files/R-" . $this->filename . '.zip'))) {
-                unlink(Storage::path("public/files/R-" . $this->filename . '.zip'));
+            if (file_exists(Storage::path("files/sunat/R-" . $this->filename . '.zip'))) {
+                unlink(Storage::path("files/sunat/R-" . $this->filename . '.zip'));
             }
             $this->setSuccess(false);
             $this->setCode("-1");
@@ -620,11 +620,11 @@ class SoapResult
             $this->setSuccess(true);
         } else {
             if ($response) {
-                if (file_exists(Storage::path("public/files/" . $this->filename . '.xml'))) {
-                    unlink(Storage::path("public/files/" . $this->filename . '.xml'));
+                if (file_exists(Storage::path("files/sunat/" . $this->filename . '.xml'))) {
+                    unlink(Storage::path("files/sunat/" . $this->filename . '.xml'));
                 }
-                if (file_exists(Storage::path("public/files/" . $this->filename . '.zip'))) {
-                    unlink(Storage::path("public/files/" . $this->filename . '.zip'));
+                if (file_exists(Storage::path("files/sunat/" . $this->filename . '.zip'))) {
+                    unlink(Storage::path("files/sunat/" . $this->filename . '.zip'));
                 }
 
                 $result = (object)json_decode($response);
@@ -634,11 +634,11 @@ class SoapResult
 
                 throw new ResponseCurlException($codigo, $mensaje, $http_code, null);
             } else {
-                if (file_exists(Storage::path("public/files/" . $this->filename . '.xml'))) {
-                    unlink(Storage::path("public/files/" . $this->filename . '.xml'));
+                if (file_exists(Storage::path("files/sunat/" . $this->filename . '.xml'))) {
+                    unlink(Storage::path("files/sunat/" . $this->filename . '.xml'));
                 }
-                if (file_exists(Storage::path("public/files/" . $this->filename . '.zip'))) {
-                    unlink(Storage::path("public/files/" . $this->filename . '.zip'));
+                if (file_exists(Storage::path("files/sunat/" . $this->filename . '.zip'))) {
+                    unlink(Storage::path("files/sunat/" . $this->filename . '.zip'));
                 }
                 throw new Exception("Se presento una condicion inesperada que impidio completar el Request");
             }
@@ -677,15 +677,15 @@ class SoapResult
                     $cdr = base64_decode($result->arcCdr);
 
                     // $archivo = fopen('../files/R-' . $this->filename . '.zip', 'w+');
-                    $archivo = fopen(Storage::path("public/files/R-" . $this->filename . '.zip'), 'w+');
+                    $archivo = fopen(Storage::path("files/sunat/R-" . $this->filename . '.zip'), 'w+');
                     fputs($archivo, $cdr);
                     fclose($archivo);
                     // chmod('../files/R-' . $this->filename . '.zip', 0777);
 
                     // $isExtract = Sunat::extractZip('../files/R-' . $this->filename . '.zip', '../files/');
                     $isExtract = Sunat::extractZip(
-                        Storage::path("public/files/R-" . $this->filename . '.zip'),
-                        Storage::path("public/files/")
+                        Storage::path("files/sunat/R-" . $this->filename . '.zip'),
+                        Storage::path("files/sunat/")
                     );
 
                     if (!$isExtract) {
@@ -693,7 +693,7 @@ class SoapResult
                     }
 
                     // $xml = file_get_contents('../files/R-' . $this->filename . '.xml');
-                    $xml = Storage::get('public/files/R-' . $this->filename . '.xml');
+                    $xml = Storage::get('files/sunat/R-' . $this->filename . '.xml');
                     $DOM = new DOMDocument('1.0', 'utf-8');
                     $DOM->preserveWhiteSpace = FALSE;
                     $DOM->loadXML($xml);
@@ -722,11 +722,11 @@ class SoapResult
                     //     unlink('../files/R-' . $this->filename . '.zip');
                     // }
 
-                    if (file_exists(Storage::path("public/files/" . $this->filename . '.zip'))) {
-                        unlink(Storage::path("public/files/" . $this->filename . '.zip'));
+                    if (file_exists(Storage::path("files/sunat/" . $this->filename . '.zip'))) {
+                        unlink(Storage::path("files/sunat/" . $this->filename . '.zip'));
                     }
-                    if (file_exists(Storage::path("public/files/R-" . $this->filename . '.zip'))) {
-                        unlink(Storage::path("public/files/R-" . $this->filename . '.zip'));
+                    if (file_exists(Storage::path("files/sunat/R-" . $this->filename . '.zip'))) {
+                        unlink(Storage::path("files/sunat/R-" . $this->filename . '.zip'));
                     }
 
                     $this->setAccepted(true);
@@ -742,11 +742,11 @@ class SoapResult
                     //     unlink('../files/' . $this->filename . '.zip');
                     // }
 
-                    if (file_exists(Storage::path("public/files/" . $this->filename . '.xml'))) {
-                        unlink(Storage::path("public/files/" . $this->filename . '.xml'));
+                    if (file_exists(Storage::path("files/sunat/" . $this->filename . '.xml'))) {
+                        unlink(Storage::path("files/sunat/" . $this->filename . '.xml'));
                     }
-                    if (file_exists(Storage::path("public/files/" . $this->filename . '.zip'))) {
-                        unlink(Storage::path("public/files/" . $this->filename . '.zip'));
+                    if (file_exists(Storage::path("files/sunat/" . $this->filename . '.zip'))) {
+                        unlink(Storage::path("files/sunat/" . $this->filename . '.zip'));
                     }
 
                     // $logFile = fopen("log.txt", 'a') or die("Error creando archivo");
@@ -769,11 +769,11 @@ class SoapResult
                     //     unlink('../files/' . $this->filename . '.zip');
                     // }
 
-                    if (file_exists(Storage::path("public/files/" . $this->filename . '.xml'))) {
-                        unlink(Storage::path("public/files/" . $this->filename . '.xml'));
+                    if (file_exists(Storage::path("files/sunat/" . $this->filename . '.xml'))) {
+                        unlink(Storage::path("files/sunat/" . $this->filename . '.xml'));
                     }
-                    if (file_exists(Storage::path("public/files/" . $this->filename . '.zip'))) {
-                        unlink(Storage::path("public/files/" . $this->filename . '.zip'));
+                    if (file_exists(Storage::path("files/sunat/" . $this->filename . '.zip'))) {
+                        unlink(Storage::path("files/sunat/" . $this->filename . '.zip'));
                     }
 
                     $code = $result->codRespuesta;
@@ -794,11 +794,11 @@ class SoapResult
                     //     unlink('../files/' . $this->filename . '.zip');
                     // }
 
-                    if (file_exists(Storage::path("public/files/" . $this->filename . '.xml'))) {
-                        unlink(Storage::path("public/files/" . $this->filename . '.xml'));
+                    if (file_exists(Storage::path("files/sunat/" . $this->filename . '.xml'))) {
+                        unlink(Storage::path("files/sunat/" . $this->filename . '.xml'));
                     }
-                    if (file_exists(Storage::path("public/files/" . $this->filename . '.zip'))) {
-                        unlink(Storage::path("public/files/" . $this->filename . '.zip'));
+                    if (file_exists(Storage::path("files/sunat/" . $this->filename . '.zip'))) {
+                        unlink(Storage::path("files/sunat/" . $this->filename . '.zip'));
                     }
 
                     throw new Exception("Se genero un problema, comuníquese con su proveedor del software.", $result->codRespuesta);
@@ -812,11 +812,11 @@ class SoapResult
                     //     unlink('../files/' . $this->filename . '.zip');
                     // }
 
-                    if (file_exists(Storage::path("public/files/" . $this->filename . '.xml'))) {
-                        unlink(Storage::path("public/files/" . $this->filename . '.xml'));
+                    if (file_exists(Storage::path("files/sunat/" . $this->filename . '.xml'))) {
+                        unlink(Storage::path("files/sunat/" . $this->filename . '.xml'));
                     }
-                    if (file_exists(Storage::path("public/files/" . $this->filename . '.zip'))) {
-                        unlink(Storage::path("public/files/" . $this->filename . '.zip'));
+                    if (file_exists(Storage::path("files/sunat/" . $this->filename . '.zip'))) {
+                        unlink(Storage::path("files/sunat/" . $this->filename . '.zip'));
                     }
 
                     $result = (object)json_decode($response);
@@ -832,11 +832,11 @@ class SoapResult
                     //     unlink('../files/' . $this->filename . '.zip');
                     // }
 
-                    if (file_exists(Storage::path("public/files/" . $this->filename . '.xml'))) {
-                        unlink(Storage::path("public/files/" . $this->filename . '.xml'));
+                    if (file_exists(Storage::path("files/sunat/" . $this->filename . '.xml'))) {
+                        unlink(Storage::path("files/sunat/" . $this->filename . '.xml'));
                     }
-                    if (file_exists(Storage::path("public/files/" . $this->filename . '.zip'))) {
-                        unlink(Storage::path("public/files/" . $this->filename . '.zip'));
+                    if (file_exists(Storage::path("files/sunat/" . $this->filename . '.zip'))) {
+                        unlink(Storage::path("files/sunat/" . $this->filename . '.zip'));
                     }
 
                     throw new Exception("Se presento una condicion inesperada que impidio completar el
@@ -851,11 +851,11 @@ class SoapResult
             //     unlink('../files/' . $this->filename . '.zip');
             // }
 
-            if (file_exists(Storage::path("public/files/" . $this->filename . '.xml'))) {
-                unlink(Storage::path("public/files/" . $this->filename . '.xml'));
+            if (file_exists(Storage::path("files/sunat/" . $this->filename . '.xml'))) {
+                unlink(Storage::path("files/sunat/" . $this->filename . '.xml'));
             }
-            if (file_exists(Storage::path("public/files/" . $this->filename . '.zip'))) {
-                unlink(Storage::path("public/files/" . $this->filename . '.zip'));
+            if (file_exists(Storage::path("files/sunat/" . $this->filename . '.zip'))) {
+                unlink(Storage::path("files/sunat/" . $this->filename . '.zip'));
             }
 
             throw new Exception($ex->getMessage(), -1);

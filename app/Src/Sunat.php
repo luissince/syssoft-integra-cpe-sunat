@@ -20,7 +20,7 @@ class Sunat
     public static function signDocument($filename)
     {
         $doc = new DOMDocument();
-        $doc->load(Storage::path("public/files/".$filename));
+        $doc->load(Storage::path("files/sunat/".$filename));
 
         $objDSig = new XMLSecurityDSig();
         $objDSig->setCanonicalMethod(XMLSecurityDSig::EXC_C14N);
@@ -31,8 +31,8 @@ class Sunat
             array('force_uri' => true)
         );
 
-        $privateKeyPath = Storage::get('certificado/private_key.pem');
-        $publicKeyPath = Storage::get('certificado/public_key.pem');
+        $privateKeyPath = Storage::get('files/certificado/private_key.pem');
+        $publicKeyPath = Storage::get('files/certificado/public_key.pem');
 
         $objKey = new XMLSecurityKey(XMLSecurityKey::RSA_SHA1, array('type' => 'private'));
         $objKey->loadKey($privateKeyPath, false);
@@ -42,15 +42,16 @@ class Sunat
         $objDSig->appendSignature($doc->getElementsByTagName('ExtensionContent')->item(0));
 
         // Guarda el archivo XML en la carpeta de almacenamiento de Laravel
-        $xmlOutputPath = 'files/' . $filename;
-        Storage::disk('public')->put($xmlOutputPath , $doc->saveXML());
+        $xmlOutputPath = 'files/sunat/' . $filename;
+        // Storage::disk('public')->put($xmlOutputPath , $doc->saveXML());
+        Storage::put($xmlOutputPath , $doc->saveXML());
 
         self::$filename = $xmlOutputPath;
     }
 
     public static function getXmlSign()
     {
-        $xml = Storage::get('public/'.self::$filename);
+        $xml = Storage::get(self::$filename);
         $DOM = new DOMDocument('1.0', 'ISO-8859-1');
         $DOM->preserveWhiteSpace = FALSE;
         $DOM->loadXML($xml);

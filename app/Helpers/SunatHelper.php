@@ -20,14 +20,15 @@ class SunatHelper
     public static function sendBillToSunat(string $fileName, DOMDocument $xml, $idVenta, $empresa)
     {
         $fileNameXml  = $fileName . '.xml';
-        $path = 'files/' . $fileNameXml;
+        $path = 'sunat/' . $fileNameXml;
 
-        Storage::disk('public')->put($path, $xml->saveXML());
+        // Storage::disk('files')->put($path, $xml->saveXML());
+        Storage::put('files/'.$path, $xml->saveXML());
         Sunat::signDocument($fileNameXml);
 
         Sunat::createZip(
-            Storage::path("public/files/" . $fileName . '.zip'),
-            Storage::path("public/files/" . $fileNameXml),
+            Storage::path("files/sunat/" . $fileName . '.zip'),
+            Storage::path("files/sunat/" . $fileNameXml),
             $fileNameXml
         );
 
@@ -43,7 +44,7 @@ class SunatHelper
             $empresa->usuarioSolSunat,
             $empresa->claveSolSunat,
             $fileName . '.zip',
-            Sunat::generateBase64File(Storage::get('public/files/' . $fileName . '.zip'))
+            Sunat::generateBase64File(Storage::get('files/sunat/' . $fileName . '.zip'))
         ));
 
         if ($soapResult->isSuccess()) {
@@ -98,14 +99,15 @@ class SunatHelper
     public static function sendSumaryToSunat(string $fileName, DOMDocument $xml, string $idVenta, $empresa, int $correlativo, DateTime $currentDate)
     {
         $fileNameXml  = $fileName . '.xml';
-        $path = 'files/' . $fileNameXml;
+        $path = 'sunat/' . $fileNameXml;
 
-        Storage::disk('public')->put($path, $xml->saveXML());
+        // Storage::disk('files')->put($path, $xml->saveXML());
+        Storage::put('files/'.$path, $xml->saveXML());
         Sunat::signDocument($fileNameXml);
 
         Sunat::createZip(
-            Storage::path("public/files/" . $fileName . '.zip'),
-            Storage::path("public/files/" . $fileNameXml),
+            Storage::path("files/sunat/" . $fileName . '.zip'),
+            Storage::path("files/sunat/" . $fileNameXml),
             $fileNameXml
         );
 
@@ -121,7 +123,7 @@ class SunatHelper
             $empresa->usuarioSolSunat,
             $empresa->claveSolSunat,
             $fileName . '.zip',
-            Sunat::generateBase64File(Storage::get('public/files/' . $fileName . '.zip'))
+            Sunat::generateBase64File(Storage::get('files/sunat/' . $fileName . '.zip'))
         ));
 
         $updateData = [
@@ -216,19 +218,20 @@ class SunatHelper
     public static function sendDespatchAdvice(string $fileName, DOMDocument $xml, $idGuiaRemision, $guiaRemision, $empresa)
     {
         $fileNameXml  = $fileName . '.xml';
-        $path = 'files/' . $fileNameXml;
+        $path = 'sunat/' . $fileNameXml;
 
-        Storage::disk('public')->put($path, $xml->saveXML());
+        // Storage::disk('files')->put($path, $xml->saveXML());
+        Storage::put('files/'.$path, $xml->saveXML());
         Sunat::signDocument($fileNameXml);
 
         Sunat::createZip(
-            Storage::path("public/files/" . $fileName . '.zip'),
-            Storage::path("public/files/" . $fileNameXml),
+            Storage::path("files/sunat/" . $fileName . '.zip'),
+            Storage::path("files/sunat/" . $fileNameXml),
             $fileNameXml
         );
 
         $soapResult = new SoapResult('', $fileName);
-        $soapResult->setConfigGuiaRemision(Storage::path("public/files/" . $fileName . '.zip'));
+        $soapResult->setConfigGuiaRemision(Storage::path("files/sunat/" . $fileName . '.zip'));
         $soapResult->sendGuiaRemision(
             [
                 "NumeroDocumento" => $empresa->documento,

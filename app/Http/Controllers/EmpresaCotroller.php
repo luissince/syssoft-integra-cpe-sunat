@@ -2,38 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use Dotenv\Exception\ValidationException;
+use App\Repositories\EmpresaRepository;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
 
 class EmpresaCotroller extends Controller
 {
 
-    public function index(Request $request)
+    private $empresaRepository;
+
+    public function __construct(EmpresaRepository $empresaRepository)
     {
-        $empresa = DB::select("SELECT 
-            idEmpresa,
-            documento,
-            razonSocial,
-            usuarioSolSunat,
-            claveSolSunat,
-            certificadoSunat,
-            claveCertificadoSunat,
-            idApiSunat,
-            claveApiSunat,
-            tipoEnvio
-        FROM 
-            empresa 
-        LIMIT 1");
-        
-        return view('welcome', ["empresa" => $empresa[0]]);
+        $this->empresaRepository = $empresaRepository;
     }
 
-    public function create(Request $request){
+    public function index()
+    {
+        return view('welcome', ["empresa" => $this->empresaRepository->get()]);
+    }
 
+    public function create(Request $request)
+    {
         try {
             DB::beginTransaction();
 
@@ -44,9 +35,9 @@ class EmpresaCotroller extends Controller
 
                 $ext = $certificado->getClientOriginalExtension();
                 $file_path = $request->input('txtNumDocumento') . "." . $ext;
-                $path = "certificado/" . $file_path;
+                $path = "files/certificado/" . $file_path;
 
-                $certificado->storeAs('certificado', $file_path);
+                $certificado->storeAs('files/certificado', $file_path);
 
                 $pkcs12 = file_get_contents($certificado->path());
                 $certificados = array();
@@ -56,17 +47,17 @@ class EmpresaCotroller extends Controller
                     $publicKeyPem  = $certificados['cert'];
                     $privateKeyPem = $certificados['pkey'];
 
-                    Storage::put('certificado/private_key.pem', $privateKeyPem);
-                    Storage::put('certificado/public_key.pem', $publicKeyPem);
+                    Storage::put('files/certificado/private_key.pem', $privateKeyPem);
+                    Storage::put('files/certificado/public_key.pem', $publicKeyPem);
 
-                    chmod(Storage::path('certificado/private_key.pem'), 0777);
-                    chmod(Storage::path('certificado/public_key.pem'), 0777);
+                    chmod(Storage::path('files/certificado/private_key.pem'), 0777);
+                    chmod(Storage::path('files/certificado/public_key.pem'), 0777);
                 } else {
                     throw new Exception('Error al crear las llaves del certificado.');
                 }
             } else {
                 $path = $request->input('certificadoUrl');
-            } 
+            }
 
             DB::table('empresa')
                 ->where('idEmpresa', $request->input('idEmpresa'))
@@ -77,7 +68,7 @@ class EmpresaCotroller extends Controller
                     'claveCertificadoSunat' => $request->input('txtClaveCertificado'),
                     'idApiSunat' => $request->input('txtIdApiSunat'),
                     'claveApiSunat' => $request->input('txtClaveApiSunat'),
-                    'tipoEnvio'=> ($request->input('cbSelectTipoEnvio') === "true")
+                    'tipoEnvio' => ($request->input('cbSelectTipoEnvio') === "true")
                 ]);
 
             DB::commit();
@@ -99,5 +90,4 @@ class EmpresaCotroller extends Controller
             ], 500);
         }
     }
-
 }

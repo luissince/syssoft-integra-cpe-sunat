@@ -24,10 +24,30 @@ class EmpresaRepository
             tipoDocumento AS td ON td.idTipoDocumento = e.idTipoDocumento 
         LIMIT 1");
 
-        if(empty($cmd)){
+        if (empty($cmd)) {
             return null;
         }
 
         return $cmd[0];
+    }
+
+    public function get()
+    {
+        $empresa = DB::select("SELECT 
+            idEmpresa,
+            documento,
+            razonSocial,
+            usuarioSolSunat,
+            claveSolSunat,
+            certificadoSunat,
+            claveCertificadoSunat,
+            idApiSunat,
+            claveApiSunat,
+            tipoEnvio
+        FROM 
+            empresa 
+        LIMIT 1");
+
+        return $empresa[0];
     }
 }
