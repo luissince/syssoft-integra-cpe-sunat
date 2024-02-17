@@ -106,7 +106,7 @@ services:
     # Configuración para reiniciar siempre el contenedor
     restart: always
     volumes:
-      - bodega-modelo-sunat-volumen:/var/www/html/storage/app/files
+      - bodega-modelo-cpe-sunat-volumen:/var/www/html/storage/app/files
 
 # Definición de redes
 networks:
@@ -119,5 +119,5 @@ volumes:
   test-cpe-sunat-volumen:
   legrand-tiquepos-cpe-sunat-volumen:
   raices-cpe-sunat-volumen:
-  felicitygirls-tiquepos-sunat-volumen:
-  bodega-modelo-sunat-volumen:
+  felicitygirls-tiquepos-cpe-sunat-volumen:
+  bodega-modelo-cpe-sunat-volumen:
