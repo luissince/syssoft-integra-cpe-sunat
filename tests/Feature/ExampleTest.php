@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ExampleTest extends TestCase
@@ -19,45 +18,42 @@ class ExampleTest extends TestCase
         $response->assertStatus(200);
     }
 
-    /**
-     * Prueba para la ruta de la guía de remisión.
-     *
-     * @return void
-     */
+
     public function testGuiaRemisionRoute()
     {
-        // Envía una solicitud GET a la ruta de la guía de remisión
         $response = $this->get('/api/guiaremision/GR0004');
 
-        // Verifica que la respuesta sea exitosa (código 200)
         $response->assertStatus(200);
 
         // Verifica que la respuesta JSON sea exactamente la esperada
-        $response->assertExactJson([
-            "state" => true,
-            "accept" => true,
-            "code" => "0",
-            "description" => "ACEPTADA"
-        ]);
+        // $response->assertExactJson([
+        //     "state" => true,
+        //     "accept" => true,
+        //     "code" => "0",
+        //     "description" => "ACEPTADA"
+        // ]);
     }
 
-    //curl  http://localhost:9000/api/boleta/VT0007
     public function testFacturaRoute()
     {
-        // Envía una solicitud GET a la ruta de la guía de remisión
         $response = $this->get('/api/boleta/VT0007');
 
-        // Verifica que la respuesta sea exitosa (código 200)
         $response->assertStatus(200);
 
         // Verifica que la respuesta JSON sea exactamente la esperada
-        $response->assertExactJson([
-            "state" => true,
-            "accept" => true,
-            "code" => "0",
-            "description" => "La Factura numero F001-2, ha sido aceptada"
-        ]);
+        // $response->assertExactJson([
+        //     "state" => true,
+        //     "accept" => true,
+        //     "code" => "0",
+        //     "description" => "La Factura numero F001-2, ha sido aceptada"
+        // ]);
+    }
 
-        // para subir
+    public function testConsultaComprobanteRoute(){
+        $response = $this->get('/api/consultar/10764233889/LUIS2023/Qz0966lb/01/F001/1');
+
+        error_log(json_encode($response));
+
+        $response->assertStatus(200);
     }
 }

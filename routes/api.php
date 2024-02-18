@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::post("/create", [EmpresaCotroller::class, 'create']);
 
+Route::get("/consultar/{ruc}/{usuarioSol}/{claveSol}/{tipoComprobante}/{serie}/{numeracion}", [EmpresaCotroller::class, 'consultar']);
+
 Route::get("/boleta/{idVenta}", [VentaController::class, 'index']);
 
 Route::get("/resumen/{idVenta}", [VentaController::class, 'resumenDiario']);

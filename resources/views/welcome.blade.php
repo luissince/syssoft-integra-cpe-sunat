@@ -266,8 +266,7 @@
                             tools.ModalAlertSuccess("Mi Empresa", result.message);
                         },
                         error: function(error) {
-                            tools.ModalAlertError("Mi Empresa", "Se produjo un error: " + error
-                                .responseText);
+                            tools.ModalAlertError("Mi Empresa", error.responseText);
                         }
                     });
                 }

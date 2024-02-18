@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Repositories\EmpresaRepository;
+use App\Src\SoapResult;
+use App\Src\Sunat;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -32,7 +34,7 @@ class EmpresaCotroller extends Controller
 
             if ($request->input('certificadoType') == 1 && $request->hasFile('certificado')) {
                 $certificado = $request->file('certificado');
- 
+
                 $ext = $certificado->getClientOriginalExtension();
                 $file_path = $request->input('txtNumDocumento') . "." . $ext;
                 $path = "files/certificado/" . $file_path;
@@ -84,10 +86,51 @@ class EmpresaCotroller extends Controller
 
             DB::rollBack();
 
-            return response()->json([
-                "state" => 0,
-                "message" => $ex->getMessage()
-            ], 500);
+            return response($ex->getMessage(),500);
+        }
+    }
+
+    public function consultar(string $ruc,string $usuarioSol, string $claveSol, string $tipoComprobante, string $serie, string $numeracion)
+    {
+        $get['rucSol'] = $ruc;
+        $get['userSol'] = $usuarioSol;
+        $get['passSol'] = $claveSol;
+        $get['ruc'] = $ruc;
+        $get['tipo'] = $tipoComprobante;
+        $get['serie'] = $serie;
+        $get['numero'] = $numeracion;
+        $get['cdr'] = '';
+
+        $arguments = [
+            $get["ruc"],
+            $get["tipo"],
+            $get["serie"],
+            intval($get["numero"])
+        ];
+
+        $wdsl = Storage::path('wsdl/billConsultService.wsdl');
+
+        $soapResult = new SoapResult($wdsl, implode('-', $arguments));
+        $soapResult->sendGetStatusValid(Sunat::xmlGetValidService($get));
+
+        if ($soapResult->isSuccess()) {
+            if ($soapResult->isAccepted()) {
+                return response()->json([
+                    "state" => $soapResult->isSuccess(),
+                    "accepted" => $soapResult->isAccepted(),
+                    "code" => $soapResult->getCode(),
+                    "message" => $soapResult->getMessage()
+                ]);
+            } else {
+                return response()->json([
+                    "state" => $soapResult->isSuccess(),
+                    "accepted" => $soapResult->isAccepted(),
+                    "code" => $soapResult->getCode(),
+                    "message" => $soapResult->getMessage(),
+                ]);
+            }
+        } else {
+            return response()->json(["message" => $soapResult->getMessage()], 500);
         }
     }
 }
