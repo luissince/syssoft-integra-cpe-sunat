@@ -38,7 +38,7 @@ class Sunat
         $objKey->loadKey($privateKeyPath, false);
 
         $objDSig->sign($objKey);
-        $objDSig->add509Cert($publicKeyPath, true, false, array('subjectName' => true));
+        $objDSig->add509Cert($publicKeyPath, true, false);
         $objDSig->appendSignature($doc->getElementsByTagName('ExtensionContent')->item(0));
 
         // Guarda el archivo XML en la carpeta de almacenamiento de Laravel
