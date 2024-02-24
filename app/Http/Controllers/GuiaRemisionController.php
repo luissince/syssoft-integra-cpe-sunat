@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Helpers\SunatHelper;
 use App\Helpers\XmlGenerator;
+use App\Models\Empresa;
+use App\Models\GuiaRemision\Detalle;
+use App\Models\GuiaRemision\GuiaRemision;
 use App\Repositories\EmpresaRepository;
 use App\Repositories\GuiaRemisionRepository;
 use App\Repositories\SucursalRepository;
@@ -36,13 +39,35 @@ class GuiaRemisionController extends Controller
         $fileName = $empresa->documento . "-" . $guiaRemision->codigo . "-" . $guiaRemision->serie . "-" . $guiaRemision->numeracion;
 
         if ($guiaRemision->numeroTicketSunat !== "") {
-            return SunatHelper::getStatusDespatchAdvice($fileName, $idGuiaRemision, $guiaRemision, $empresa, $guiaRemision->numeroTicketSunat);
+            return SunatHelper::getStatusDespatchAdviceToSunat($fileName, $idGuiaRemision, $guiaRemision, $empresa, $guiaRemision->numeroTicketSunat);
         }
 
         $detalle = $this->guiaRemisionRepository->obtenerDetalleGuiaRemisionPorId($idGuiaRemision);
 
         $xml = XmlGenerator::generateDespatchAdviceXml($guiaRemision, $detalle, $empresa);
 
-        return SunatHelper::sendDespatchAdvice($fileName, $xml, $idGuiaRemision, $guiaRemision, $empresa);
+        return SunatHelper::sendDespatchAdviceSunat($fileName, $xml, $idGuiaRemision, $guiaRemision, $empresa);
+    }
+
+    public function sendGuiaRemision(Request $request)
+    {
+        $guiaRemision = new GuiaRemision($request->guiaRemision);
+        $empresa = new Empresa($request->empresa);
+
+        $fileName = $empresa->documento . "-" . $guiaRemision->codigo . "-" . $guiaRemision->serie . "-" . $guiaRemision->numeracion;
+
+        if ($guiaRemision->numeroTicketSunat !== "") {
+            return SunatHelper::getStatusDespatchAdvice($fileName, $guiaRemision->idGuiaRemision, $guiaRemision, $empresa, $guiaRemision->numeroTicketSunat);
+        }
+
+        $detalles = [];
+        foreach ($request->detalle as $detalleData) {
+            $detalle = new Detalle($detalleData);
+            $detalles[] = $detalle;
+        }
+        
+        $xml = XmlGenerator::createDespatchAdviceXml($guiaRemision, $detalles, $empresa);
+
+        return SunatHelper::sendDespatchAdvice($fileName, $xml, $guiaRemision->idGuiaRemision, $guiaRemision, $empresa);
     }
 }

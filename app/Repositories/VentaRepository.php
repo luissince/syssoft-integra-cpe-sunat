@@ -27,7 +27,7 @@ class VentaRepository
             v.fechaCorrelativo,
             v.correlativo,
             IFNULL(v.ticketConsultaSunat,'') AS ticketConsultaSunat,
-            tv.nombre AS formaVenta, 
+            tv.idFormaPago, 
             v.estado, 
             m.simbolo,
             m.codiso,
@@ -51,7 +51,7 @@ class VentaRepository
         return $cmd[0];
     }
 
-    public function obteneCorrelativoResumenDiario()
+    public function obtenerCorrelativoResumenDiario()
     {
         // $data = DB::table('venta')->where('idVenta', 'VT0001')->first(["fecha", "hora"]);
         $correlativo = DB::table('venta')
@@ -80,6 +80,21 @@ class VentaRepository
             INNER JOIN categoria AS m ON p.idCategoria = m.idCategoria 
             INNER JOIN impuesto AS imp ON vd.idImpuesto  = imp.idImpuesto  
         WHERE vd.idVenta = ?", [
+            $idVenta
+        ]);
+    }
+
+    public function obtenerPlazosPorId(string $idVenta)
+    {
+        return DB::select("SELECT 
+            cuota,
+            fecha,
+            hora,
+            monto
+        FROM 
+            plazo 
+        WHERE 
+            idVenta = ?", [
             $idVenta
         ]);
     }

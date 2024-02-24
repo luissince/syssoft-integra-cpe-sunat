@@ -2,6 +2,7 @@
 
 namespace App\Src;
 
+use App\Models\Consulta;
 use RobRichards\XMLSecLibs\XMLSecurityDSig;
 use RobRichards\XMLSecLibs\XMLSecurityKey;
 use DOMDocument;
@@ -20,7 +21,7 @@ class Sunat
     public static function signDocument($filename)
     {
         $doc = new DOMDocument();
-        $doc->load(Storage::path("files/sunat/".$filename));
+        $doc->load(Storage::path("files/sunat/" . $filename));
 
         $objDSig = new XMLSecurityDSig();
         $objDSig->setCanonicalMethod(XMLSecurityDSig::EXC_C14N);
@@ -44,7 +45,7 @@ class Sunat
         // Guarda el archivo XML en la carpeta de almacenamiento de Laravel
         $xmlOutputPath = 'files/sunat/' . $filename;
         // Storage::disk('public')->put($xmlOutputPath , $doc->saveXML());
-        Storage::put($xmlOutputPath , $doc->saveXML());
+        Storage::put($xmlOutputPath, $doc->saveXML());
 
         self::$filename = $xmlOutputPath;
     }
@@ -82,11 +83,13 @@ class Sunat
         }
     }
 
-    public static function generateHashFile(string $algoritmo = 'sha256', string $path){
+    public static function generateHashFile(string $algoritmo = 'sha256', string $path)
+    {
         return hash_file($algoritmo, $path);
     }
 
-    public static function generateBase64File(string $filename){
+    public static function generateBase64File(string $filename)
+    {
         // return base64_encode(file_get_contents($filename));
         return base64_encode($filename);
     }
@@ -111,7 +114,7 @@ class Sunat
         </soapenv:Body>
         </soapenv:Envelope>';
     }
-    
+
 
     public static function xmlSendSummary($NumeroDocumento, $UsuarioSol, $ClaveSol, $filename, $fileencode)
     {
@@ -177,7 +180,7 @@ class Sunat
         </soapenv:Envelope>';
     }
 
-    public static function xmlGetValidService($get)
+    public static function xmlGetValidServiceSunat($get)
     {
         return '<?xml version="1.0" encoding="UTF-8"?>
         <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://service.sunat.gob.pe" xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
@@ -195,6 +198,29 @@ class Sunat
                 <tipoComprobante>' . $get["tipo"] . '</tipoComprobante>
                 <serieComprobante>' . $get["serie"] . '</serieComprobante>
                 <numeroComprobante>' . $get["numero"] . '</numeroComprobante>
+            </ser:getStatus>
+        </soapenv:Body>
+        </soapenv:Envelope>';
+    }
+
+    public static function xmlGetValidService(Consulta $consulta)
+    {
+        return '<?xml version="1.0" encoding="UTF-8"?>
+        <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://service.sunat.gob.pe" xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+        <soapenv:Header>
+            <wsse:Security>
+                <wsse:UsernameToken>
+                    <wsse:Username>' . $consulta->ruc . '' . $consulta->usuarioSol . '</wsse:Username>
+                    <wsse:Password>' . $consulta->claveSol . '</wsse:Password>
+                </wsse:UsernameToken>
+            </wsse:Security>
+        </soapenv:Header>
+        <soapenv:Body>
+            <ser:getStatus>
+                <rucComprobante>' . $consulta->ruc . '</rucComprobante>
+                <tipoComprobante>' . $consulta->tipoComprobante . '</tipoComprobante>
+                <serieComprobante>' . $consulta->serie . '</serieComprobante>
+                <numeroComprobante>' . $consulta->numeracion . '</numeroComprobante>
             </ser:getStatus>
         </soapenv:Body>
         </soapenv:Envelope>';

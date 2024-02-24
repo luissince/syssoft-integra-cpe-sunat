@@ -27,3 +27,17 @@ Route::get("/resumen/{idVenta}", [VentaController::class, 'resumenDiario']);
 Route::get("/comunicaciondebaja/{idVenta}", [VentaController::class, 'comunicacionDeBaja']);
 
 Route::get("/guiaremision/{idGuiaRemision}", [GuiaRemisionController::class, 'index']);
+
+/**
+ * Api V1
+ */
+
+Route::post("/v1/facturar", [VentaController::class, 'sendBoletaOrFactura']);
+
+Route::post("/v1/anular/boleta", [VentaController::class, 'sendResumenDiario']);
+
+Route::post("/v1/anular/factura", [VentaController::class, 'sendComunicacionDeBaja']);
+
+Route::post("/v1/guia/remision", [GuiaRemisionController::class, 'sendGuiaRemision']);
+
+Route::post("/v1/consultar", [EmpresaCotroller::class, 'sendConsulta']);

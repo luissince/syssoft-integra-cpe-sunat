@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Consulta;
 use App\Repositories\EmpresaRepository;
 use App\Src\SoapResult;
 use App\Src\Sunat;
@@ -111,7 +112,44 @@ class EmpresaCotroller extends Controller
         $wdsl = Storage::path('wsdl/billConsultService.wsdl');
 
         $soapResult = new SoapResult($wdsl, implode('-', $arguments));
-        $soapResult->sendGetStatusValid(Sunat::xmlGetValidService($get));
+        $soapResult->sendGetStatusValid(Sunat::xmlGetValidServiceSunat($get));
+
+        if ($soapResult->isSuccess()) {
+            if ($soapResult->isAccepted()) {
+                return response()->json([
+                    "state" => $soapResult->isSuccess(),
+                    "accepted" => $soapResult->isAccepted(),
+                    "code" => $soapResult->getCode(),
+                    "message" => $soapResult->getMessage()
+                ]);
+            } else {
+                return response()->json([
+                    "state" => $soapResult->isSuccess(),
+                    "accepted" => $soapResult->isAccepted(),
+                    "code" => $soapResult->getCode(),
+                    "message" => $soapResult->getMessage(),
+                ]);
+            }
+        } else {
+            return response()->json(["message" => $soapResult->getMessage()], 500);
+        }
+    }
+
+    public function sendConsulta(Request $request)
+    {
+        $consulta = new Consulta($request);
+
+        $arguments = [
+            $consulta->ruc,
+            $consulta->tipoComprobante,
+            $consulta->serie,
+            $consulta->numeracion
+        ];
+
+        $wdsl = Storage::path('wsdl/billConsultService.wsdl');
+
+        $soapResult = new SoapResult($wdsl, implode('-', $arguments));
+        $soapResult->sendGetStatusValid(Sunat::xmlGetValidService($consulta));
 
         if ($soapResult->isSuccess()) {
             if ($soapResult->isAccepted()) {
