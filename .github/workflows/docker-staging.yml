@@ -1,0 +1,44 @@
+# Nombre del flujo de trabajo: Docker Image CI - SySoftIntegra Cpe-Sunat
+name: Docker Staging CI - SySoftIntegra Cpe-Sunat
+
+# Desencadenadores de eventos: se activará en el push a las ramas 'staging'
+on:
+  push:
+    branches: 
+      - staging
+
+jobs:
+  build-and-deploy-app-leatsac:
+    runs-on: self-hosted
+    environment: leatsac
+      
+    env:  
+      APP_DEBUG: ${{ secrets.APP_DEBUG }}
+      APP_ENV: ${{ secrets.APP_ENV }}
+      APP_URL: ${{ secrets.APP_URL }}
+      DB_DATABASE: ${{ secrets.DB_DATABASE }}
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_PORT: ${{ secrets.DB_PORT }}
+      DB_USERNAME: ${{ secrets.DB_USERNAME }}
+      
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Copiar .env.example a .env
+        run: cp .env.example .env
+
+      - name: Configurar valores en .env
+        run: |
+          sed -i "s~APP_DEBUG=.*~APP_DEBUG=${APP_DEBUG}~" .env
+          sed -i "s~APP_ENV=.*~APP_ENV=${APP_ENV}~" .env
+          sed -i "s~APP_URL=.*~APP_URL=${APP_URL}~" .env
+          sed -i "s~DB_DATABASE=.*~DB_DATABASE=${DB_DATABASE}~" .env
+          sed -i "s~DB_HOST=.*~DB_HOST=${DB_HOST}~" .env
+          sed -i "s~DB_PASSWORD=.*~DB_PASSWORD=${DB_PASSWORD}~" .env
+          sed -i "s~DB_PORT=.*~DB_PORT=${DB_PORT}~" .env
+          sed -i "s~DB_USERNAME=.*~DB_USERNAME=${DB_USERNAME}~" .env
+      
+      - name: Creando y ejecutando contenedor
+        run: docker compose up --build leatsac-cpe-sunat-services -d
