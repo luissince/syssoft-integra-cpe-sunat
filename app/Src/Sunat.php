@@ -2,6 +2,7 @@
 
 namespace App\Src;
 
+use App\Models\Certificado;
 use App\Models\Consulta;
 use RobRichards\XMLSecLibs\XMLSecurityDSig;
 use RobRichards\XMLSecLibs\XMLSecurityKey;
@@ -18,7 +19,7 @@ class Sunat
     {
     }
 
-    public static function signDocument($filename)
+    public static function signDocumentSunat($filename)
     {
         $doc = new DOMDocument();
         $doc->load(Storage::path("files/sunat/" . $filename));
@@ -40,6 +41,35 @@ class Sunat
 
         $objDSig->sign($objKey);
         $objDSig->add509Cert($publicKeyPath, true, false);
+        $objDSig->appendSignature($doc->getElementsByTagName('ExtensionContent')->item(0));
+
+        // Guarda el archivo XML en la carpeta de almacenamiento de Laravel
+        $xmlOutputPath = 'files/sunat/' . $filename;
+        // Storage::disk('public')->put($xmlOutputPath , $doc->saveXML());
+        Storage::put($xmlOutputPath, $doc->saveXML());
+
+        self::$filename = $xmlOutputPath;
+    }
+
+    public static function signDocument(string $filename, Certificado $certificado)
+    {
+        $doc = new DOMDocument();
+        $doc->load(Storage::path("files/sunat/" . $filename));
+
+        $objDSig = new XMLSecurityDSig();
+        $objDSig->setCanonicalMethod(XMLSecurityDSig::EXC_C14N);
+        $objDSig->addReference(
+            $doc,
+            XMLSecurityDSig::SHA1,
+            array('http://www.w3.org/2000/09/xmldsig#enveloped-signature'),
+            array('force_uri' => true)
+        );
+
+        $objKey = new XMLSecurityKey(XMLSecurityKey::RSA_SHA1, array('type' => 'private'));
+        $objKey->loadKey($certificado->privateKey, false);
+
+        $objDSig->sign($objKey);
+        $objDSig->add509Cert($certificado->publicKey, true, false);
         $objDSig->appendSignature($doc->getElementsByTagName('ExtensionContent')->item(0));
 
         // Guarda el archivo XML en la carpeta de almacenamiento de Laravel
