@@ -87,7 +87,7 @@ services:
     volumes:
       - felicitygirls-tiquepos-cpe-sunat-volumen:/var/www/html/storage/app/files
 
-  # Servicio para la aplicación de legrand 
+  # Servicio para la aplicación de bodega modelo 
   bodega-modelo-cpe-sunat-services:
     # Configuración para construir la imagen del contenedor
     build:
@@ -108,6 +108,27 @@ services:
     volumes:
       - bodega-modelo-cpe-sunat-volumen:/var/www/html/storage/app/files
 
+  # Servicio para la aplicación de leatsac 
+  leatsac-cpe-sunat-services:
+    # Configuración para construir la imagen del contenedor
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Nombre de la imagen resultante
+    image: leatsac-cpe-sunat-image
+    # Conexión a la red llamada 'luis'
+    networks:
+      - luis
+    # Mapeo de puertos: Mapea el puerto 6013 del host al puerto 80 del contenedor
+    ports:
+      - 6033:80
+    # Nombre del contenedor
+    container_name: leatsac-cpe-sunat
+    # Configuración para reiniciar siempre el contenedor
+    restart: always
+    volumes:
+      - leatsac-cpe-sunat-volumen:/var/www/html/storage/app/files
+
 # Definición de redes
 networks:
   # Definición de la red llamada 'luis'
@@ -121,3 +142,4 @@ volumes:
   raices-cpe-sunat-volumen:
   felicitygirls-tiquepos-cpe-sunat-volumen:
   bodega-modelo-cpe-sunat-volumen:
+  leatsac-cpe-sunat-volumen:
