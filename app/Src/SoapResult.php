@@ -490,13 +490,13 @@ class SoapResult
         }
     }
 
-    public function sendGuiaRemision(array $credenciales, array $uri)
+    public function sendGuiaRemision(array $credenciales, array $uri, bool $tipoEnvio)
     {
         try {
-            $accessToken = $this->getTokenApiSunat($credenciales);
+            $accessToken = $this->getTokenApiSunat($credenciales, $tipoEnvio);
 
             if ($this->ticket) {
-                $this->sendGetStatusGuiaRemision($accessToken);
+                $this->sendGetStatusGuiaRemision($accessToken, $tipoEnvio);
             } else {
                 $this->sendApiSunatGuiaRemision($accessToken, implode("-", $uri));
             }
@@ -518,7 +518,7 @@ class SoapResult
         }
     }
 
-    private function getTokenApiSunat(array $credenciales)
+    private function getTokenApiSunat(array $credenciales, bool $tipoEnvio)
     {
         $headers = array(
             'Content-Type: application/x-www-form-urlencoded'
@@ -541,8 +541,11 @@ class SoapResult
         }
 
         $curl = curl_init();
-        curl_setopt($curl, CURLOPT_URL, 'https://gre-test.nubefact.com/v1/clientessol/' . $credenciales["IdApiSunat"] . '/oauth2/token');
-        // curl_setopt($curl, CURLOPT_URL, 'https://api-seguridad.sunat.gob.pe/v1/clientessol/' . $credenciales["IdApiSunat"] . '/oauth2/token/');
+        if ($tipoEnvio === false) {
+            curl_setopt($curl, CURLOPT_URL, 'https://gre-test.nubefact.com/v1/clientessol/' . $credenciales["IdApiSunat"] . '/oauth2/token');
+        } else {
+            curl_setopt($curl, CURLOPT_URL, 'https://api-seguridad.sunat.gob.pe/v1/clientessol/' . $credenciales["IdApiSunat"] . '/oauth2/token/');
+        }
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_ENCODING, '');
         curl_setopt($curl, CURLOPT_MAXREDIRS, 10);
@@ -575,7 +578,7 @@ class SoapResult
         }
     }
 
-    private function sendApiSunatGuiaRemision(string $token, string $uri)
+    private function sendApiSunatGuiaRemision(string $token, string $uri, $tipoEnvio)
     {
         $headers = array(
             'Content-Type: application/json',
@@ -593,8 +596,11 @@ class SoapResult
         $data_string = json_encode($data);
 
         $curl = curl_init();
-        curl_setopt($curl, CURLOPT_URL, 'https://gre-test.nubefact.com/v1/contribuyente/gem/comprobantes/' . $uri . '');
-        // curl_setopt($curl, CURLOPT_URL, 'https://api-cpe.sunat.gob.pe/v1/contribuyente/gem/comprobantes/' . $uri . '');
+        if ($tipoEnvio === false) {
+            curl_setopt($curl, CURLOPT_URL, 'https://gre-test.nubefact.com/v1/contribuyente/gem/comprobantes/' . $uri . '');
+        } else {
+            curl_setopt($curl, CURLOPT_URL, 'https://api-cpe.sunat.gob.pe/v1/contribuyente/gem/comprobantes/' . $uri . '');
+        }
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_ENCODING, '');
         curl_setopt($curl, CURLOPT_MAXREDIRS, 10);
@@ -645,7 +651,7 @@ class SoapResult
         }
     }
 
-    private function sendGetStatusGuiaRemision(string $token)
+    private function sendGetStatusGuiaRemision(string $token, bool $tipoEnvio)
     {
         try {
             $headers = array(
@@ -654,8 +660,11 @@ class SoapResult
             );
 
             $curl = curl_init();
-            curl_setopt($curl, CURLOPT_URL, 'https://gre-test.nubefact.com/v1/contribuyente/gem/comprobantes/envios/' .  $this->ticket . '');
-            //curl_setopt($curl, CURLOPT_URL, 'https://api-cpe.sunat.gob.pe/v1/contribuyente/gem/comprobantes/envios/' .  $this->ticket . '');
+            if ($tipoEnvio === false) {
+                curl_setopt($curl, CURLOPT_URL, 'https://gre-test.nubefact.com/v1/contribuyente/gem/comprobantes/envios/' .  $this->ticket . '');
+            } else {
+                curl_setopt($curl, CURLOPT_URL, 'https://api-cpe.sunat.gob.pe/v1/contribuyente/gem/comprobantes/envios/' .  $this->ticket . '');
+            }
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($curl, CURLOPT_ENCODING, '');
             curl_setopt($curl, CURLOPT_MAXREDIRS, 10);

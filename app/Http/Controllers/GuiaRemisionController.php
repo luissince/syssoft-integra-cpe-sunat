@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\SunatHelper;
 use App\Helpers\XmlGenerator;
+use App\Models\Certificado;
 use App\Models\Empresa;
 use App\Models\GuiaRemision\Detalle;
 use App\Models\GuiaRemision\GuiaRemision;
@@ -53,11 +54,12 @@ class GuiaRemisionController extends Controller
     {
         $guiaRemision = new GuiaRemision($request->guiaRemision);
         $empresa = new Empresa($request->empresa);
+        $certificado = new Certificado($request->certificado);
 
         $fileName = $empresa->documento . "-" . $guiaRemision->codigo . "-" . $guiaRemision->serie . "-" . $guiaRemision->numeracion;
 
         if ($guiaRemision->numeroTicketSunat !== "") {
-            return SunatHelper::getStatusDespatchAdvice($fileName, $guiaRemision->idGuiaRemision, $guiaRemision, $empresa, $guiaRemision->numeroTicketSunat);
+            return SunatHelper::getStatusDespatchAdvice($fileName, $guiaRemision, $empresa, $guiaRemision->numeroTicketSunat);
         }
 
         $detalles = [];
@@ -68,6 +70,6 @@ class GuiaRemisionController extends Controller
         
         $xml = XmlGenerator::createDespatchAdviceXml($guiaRemision, $detalles, $empresa);
 
-        return SunatHelper::sendDespatchAdvice($fileName, $xml, $guiaRemision->idGuiaRemision, $guiaRemision, $empresa);
+        return SunatHelper::sendDespatchAdvice($fileName, $xml, $guiaRemision, $empresa, $certificado);
     }
 }

@@ -12,6 +12,7 @@ class Empresa
 	public string $claveSolSunat;
 	public string $idApiSunat;
 	public string $claveApiSunat;
+    public bool $tipoEnvio;
 
 	public function __construct($data)
     {
@@ -23,5 +24,6 @@ class Empresa
         $this->claveSolSunat = $data['claveSolSunat'];
         $this->idApiSunat = $data['idApiSunat'];
         $this->claveApiSunat = $data['claveApiSunat'];
+        $this->tipoEnvio = $data['tipoEnvio'];
     }
 }

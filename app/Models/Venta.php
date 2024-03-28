@@ -43,8 +43,8 @@ class Venta
         $this->usuario = $data['usuario'];
         $this->fecha = $data['fecha'];
         $this->hora = $data['hora'];
-        $this->fechaCorrelativo = $data['fechaCorrelativo'];
-        $this->correlativo = $data['correlativo'];
+        $this->fechaCorrelativo = $data['fechaCorrelativo'] === null ? "" : $data['fechaCorrelativo'];
+        $this->correlativo = $data['correlativo'] === null ? 0 : $data['correlativo'];
         $this->ticketConsultaSunat = $data['ticketConsultaSunat'] === null ? "" : $data['ticketConsultaSunat'];
         $this->idFormaPago = $data['idFormaPago'];
         $this->estado = $data['estado'];

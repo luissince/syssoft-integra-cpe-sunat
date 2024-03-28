@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Models\Certificado;
 use App\Models\Empresa;
 use App\Models\GuiaRemision\GuiaRemision;
 use App\Models\Venta;
@@ -99,14 +100,14 @@ class SunatHelper
         return response()->json($responseData);
     }
 
-    public static function sendBill(string $fileName, DOMDocument $xml, string $idVenta, Empresa $empresa)
+    public static function sendBill(string $fileName, DOMDocument $xml, Empresa $empresa, Certificado $certificado)
     {
         $fileNameXml  = $fileName . '.xml';
         $path = 'sunat/' . $fileNameXml;
 
         // Storage::disk('files')->put($path, $xml->saveXML());
         Storage::put('files/' . $path, $xml->saveXML());
-        Sunat::signDocument($fileNameXml);
+        Sunat::signDocumentXml($fileNameXml, $certificado);
 
         Sunat::createZip(
             Storage::path("files/sunat/" . $fileName . '.zip'),
@@ -114,7 +115,7 @@ class SunatHelper
             $fileNameXml
         );
 
-        if (DB::table('empresa')->where('tipoEnvio', 1)->get()->isEmpty()) {
+        if ($empresa->tipoEnvio === false) {
             $wdsl = Storage::path('wsdl/desarrollo/billService.wsdl');
         } else {
             $wdsl = Storage::path('wsdl/produccion/billService.wsdl');
@@ -140,15 +141,12 @@ class SunatHelper
                 $updateData["xmlGenerado"] = Sunat::getXmlSign();
             }
 
-            DB::table("venta")
-                ->where('idVenta', $idVenta)
-                ->update($updateData);
-
             $responseData = [
                 "state" => $soapResult->isSuccess(),
                 "accept" => $soapResult->isAccepted(),
                 "code" => $soapResult->getCode(),
                 "description" => $soapResult->getDescription(),
+                "update" => $updateData
             ];
         } else {
             $updateData = [
@@ -160,15 +158,12 @@ class SunatHelper
                 $updateData["xmlSunat"] = "0";
             }
 
-            DB::table("venta")
-                ->where('idVenta', $idVenta)
-                ->update($updateData);
-
             if ($soapResult->getCode() == "1033") {
                 $responseData = [
                     "state" => false,
                     "code" => $soapResult->getCode(),
                     "description" => $soapResult->getDescription(),
+                    "update" => $updateData
                 ];
             } else {
                 return response()->json(["message" => $soapResult->getDescription()], 500);
@@ -251,14 +246,13 @@ class SunatHelper
         return response()->json($responseData);
     }
 
-    public static function sendSumary(string $fileName, DOMDocument $xml, string $idVenta, $empresa, int $correlativo, DateTime $currentDate)
+    public static function sendSumary(string $fileName, DOMDocument $xml, Empresa $empresa, Certificado $certificado, int $correlativo, DateTime $currentDate)
     {
         $fileNameXml  = $fileName . '.xml';
         $path = 'sunat/' . $fileNameXml;
 
-        // Storage::disk('files')->put($path, $xml->saveXML());
         Storage::put('files/' . $path, $xml->saveXML());
-        Sunat::signDocument($fileNameXml);
+        Sunat::signDocumentXml($fileNameXml, $certificado);
 
         Sunat::createZip(
             Storage::path("files/sunat/" . $fileName . '.zip'),
@@ -266,7 +260,7 @@ class SunatHelper
             $fileNameXml
         );
 
-        if (DB::table('empresa')->where('tipoEnvio', 1)->get()->isEmpty()) {
+        if ($empresa->tipoEnvio === false) {
             $wdsl = Storage::path('wsdl/desarrollo/billService.wsdl');
         } else {
             $wdsl = Storage::path('wsdl/produccion/billService.wsdl');
@@ -292,33 +286,23 @@ class SunatHelper
             if ($soapResult->isAccepted()) {
                 $updateData["ticketConsultaSunat"] = $soapResult->getTicket();
 
-                DB::table("venta")
-                    ->where('idVenta', $idVenta)
-                    ->update($updateData);
-
                 $responseData = [
                     "state" => $soapResult->isSuccess(),
                     "accept" => $soapResult->isAccepted(),
                     "code" => $soapResult->getCode(),
                     "description" => $soapResult->getDescription(),
+                    "update" => $updateData
                 ];
             } else {
-                DB::table("venta")
-                    ->where('idVenta', $idVenta)
-                    ->update($updateData);
-
                 $responseData = [
                     "state" => $soapResult->isSuccess(),
                     "code" => $soapResult->getCode(),
                     "description" => $soapResult->getDescription(),
+                    "update" => $updateData
                 ];
             }
         } else {
-            DB::table("venta")
-                ->where('idVenta', $idVenta)
-                ->update($updateData);
-
-            return response()->json(["message" => $soapResult->getDescription()], 500);
+            return response()->json(["message" => $soapResult->getDescription(), "update" => $updateData,], 500);
         }
 
         return response()->json($responseData);
@@ -370,9 +354,9 @@ class SunatHelper
         return response()->json($responseData);
     }
 
-    public static function getStatus(string $idVenta, Venta $venta, Empresa $empresa, string $fileName)
+    public static function getStatus(Venta $venta, Empresa $empresa, string $fileName)
     {
-        if (DB::table('empresa')->where('tipoEnvio', 1)->get()->isEmpty()) {
+        if ($empresa->tipoEnvio === false) {
             $wdsl = Storage::path('wsdl/desarrollo/billService.wsdl');
         } else {
             $wdsl = Storage::path('wsdl/produccion/billService.wsdl');
@@ -399,15 +383,12 @@ class SunatHelper
                 }
             }
 
-            DB::table("venta")
-                ->where('idVenta', $idVenta)
-                ->update($updateData);
-
             $responseData = [
                 "state" => $soapResult->isSuccess(),
                 "accept" => $soapResult->isAccepted(),
                 "code" => $soapResult->getCode(),
-                "description" => $soapResult->getDescription()
+                "description" => $soapResult->getDescription(),
+                "update" => $updateData
             ];
         } else {
             return response()->json(["message" => $soapResult->getDescription()], 500);
@@ -446,7 +427,8 @@ class SunatHelper
                 "codCpe" => $guiaRemision->codigo,
                 "numSerie" => $guiaRemision->serie,
                 "numCpe" => $guiaRemision->numeracion,
-            ]
+            ],
+            false
         );
 
         if ($soapResult->isSuccess()) {
@@ -497,14 +479,13 @@ class SunatHelper
         return response()->json($responseData);
     }
 
-    public static function sendDespatchAdvice(string $fileName, DOMDocument $xml, string $idGuiaRemision, GuiaRemision $guiaRemision, Empresa $empresa)
+    public static function sendDespatchAdvice(string $fileName, DOMDocument $xml, GuiaRemision $guiaRemision, Empresa $empresa, Certificado $certificado)
     {
         $fileNameXml  = $fileName . '.xml';
         $path = 'sunat/' . $fileNameXml;
 
-        // Storage::disk('files')->put($path, $xml->saveXML());
         Storage::put('files/' . $path, $xml->saveXML());
-        Sunat::signDocument($fileNameXml);
+        Sunat::signDocumentXml($fileNameXml, $certificado);
 
         Sunat::createZip(
             Storage::path("files/sunat/" . $fileName . '.zip'),
@@ -527,7 +508,8 @@ class SunatHelper
                 "codCpe" => $guiaRemision->codigo,
                 "numSerie" => $guiaRemision->serie,
                 "numCpe" => $guiaRemision->numeracion,
-            ]
+            ],
+            $empresa->tipoEnvio
         );
 
         if ($soapResult->isSuccess()) {
@@ -542,15 +524,12 @@ class SunatHelper
                 ];
             }
 
-            DB::table("guiaRemision")
-                ->where('idGuiaRemision', $idGuiaRemision)
-                ->update($updateData);
-
             $responseData = [
                 "state" => $soapResult->isSuccess(),
                 "accept" => $soapResult->isAccepted(),
                 "code" => $soapResult->getCode(),
-                "description" => $soapResult->getMessage()
+                "description" => $soapResult->getMessage(),
+                "update" => $updateData
             ];
         } else {
             if ($soapResult->getCode() == "1033") {
@@ -559,14 +538,11 @@ class SunatHelper
                     "xmlDescripcion" => $soapResult->getMessage(),
                 ];
 
-                DB::table("guiaRemision")
-                    ->where('idGuiaRemision', $idGuiaRemision)
-                    ->update($updateData);
-
                 $responseData = [
                     "state" => false,
                     "code" => $soapResult->getCode(),
-                    "description" => $soapResult->getMessage()
+                    "description" => $soapResult->getMessage(),
+                    "update" => $updateData
                 ];
             } else {
                 return response()->json([
@@ -595,7 +571,8 @@ class SunatHelper
                 "codCpe" => $guiaRemision->codigo,
                 "numSerie" => $guiaRemision->serie,
                 "numCpe" => $guiaRemision->numeracion,
-            ]
+            ],
+            false
         );
 
         if ($soapResult->isSuccess()) {
@@ -644,7 +621,7 @@ class SunatHelper
         return response()->json($responseData);
     }
 
-    public static function getStatusDespatchAdvice(string $fileName, $idGuiaRemision,GuiaRemision $guiaRemision,Empresa $empresa, $ticket)
+    public static function getStatusDespatchAdvice(string $fileName, GuiaRemision $guiaRemision, Empresa $empresa,string $ticket)
     {
         $soapResult = new SoapResult('', $fileName);
         $soapResult->setTicket($ticket);
@@ -661,7 +638,8 @@ class SunatHelper
                 "codCpe" => $guiaRemision->codigo,
                 "numSerie" => $guiaRemision->serie,
                 "numCpe" => $guiaRemision->numeracion,
-            ]
+            ],
+            $empresa->tipoEnvio
         );
 
         if ($soapResult->isSuccess()) {
@@ -674,15 +652,12 @@ class SunatHelper
                 $updateData["codigoHash"] = $soapResult->getHashCode();
             }
 
-            DB::table("guiaRemision")
-                ->where('idGuiaRemision', $idGuiaRemision)
-                ->update($updateData);
-
             $responseData = [
                 "state" => $soapResult->isSuccess(),
                 "accept" => $soapResult->isAccepted(),
                 "code" => $soapResult->getCode(),
-                "description" => $soapResult->getMessage()
+                "description" => $soapResult->getMessage(),
+                "update" => $updateData
             ];
         } else {
             if ($soapResult->getCode() == "1033") {
@@ -691,14 +666,11 @@ class SunatHelper
                     "xmlDescripcion" => $soapResult->getMessage(),
                 ];
 
-                DB::table("guiaRemision")
-                    ->where('idGuiaRemision', $idGuiaRemision)
-                    ->update($updateData);
-
                 $responseData = [
                     "state" => false,
                     "code" => $soapResult->getCode(),
-                    "description" => $soapResult->getMessage()
+                    "description" => $soapResult->getMessage(),
+                    "update" => $updateData
                 ];
             } else {
                 return response()->json([
