@@ -3,11 +3,10 @@ name: Docker Image CI - SysSoftIntegra Cpe-Sunat
 on:
   push:
     branches: 
-      - "master"
+      - "test"
 
 jobs:
   build-and-deploy-app-test:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/test'
     runs-on: self-hosted
 
     env:  
