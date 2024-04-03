@@ -7,6 +7,7 @@ use App\Helpers\XmlGenerator;
 use App\Models\Certificado;
 use App\Models\Detalle;
 use App\Models\Empresa;
+use App\Models\Plazo;
 use App\Models\Sucursal;
 use App\Models\Venta;
 use App\Repositories\EmpresaRepository;
@@ -65,7 +66,13 @@ class VentaController extends Controller
             $detalles[] = $detalle;
         }
 
-        $xml = XmlGenerator::createInvoiceXml($venta, $detalles, $empresa, $sucursal);
+        $plazos = [];
+        foreach ($request->plazos as $plazo) {
+            $plazo = new Plazo($plazo);
+            $plazos[] = $plazo;
+        }
+
+        $xml = XmlGenerator::createInvoiceXml($venta, $detalles, $plazos, $empresa, $sucursal);
 
         $fileName = $empresa->documento . '-' . $venta->codigoVenta . '-' . $venta->serie . '-' . $venta->numeracion;
 

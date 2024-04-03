@@ -6,6 +6,7 @@ use App\Models\Empresa;
 use App\Models\Sucursal;
 use App\Models\Venta;
 use App\Models\Detalle;
+use App\Models\Plazo;
 use App\Models\FormaPago;
 use App\Models\GuiaRemision\Detalle as GuiaRemisionDetalle;
 use App\Models\GuiaRemision\GuiaRemision;
@@ -386,8 +387,9 @@ class XmlGenerator
 
     /**
      * @param Detalle[] $detalles
+     * @param Plazo[] $plazos
      */
-    public static function createInvoiceXml(Venta $venta, array $detalles, Empresa $empresa, Sucursal $sucursal): DOMDocument
+    public static function createInvoiceXml(Venta $venta, array $detalles, array $plazos,Empresa $empresa, Sucursal $sucursal): DOMDocument
     {
         $sub_total = array_reduce($detalles, function ($acumulador, $producto) {
             $igv = floatval($producto->porcentaje) / 100.00;
@@ -559,22 +561,22 @@ class XmlGenerator
             $cbc->setAttribute('currencyID', $venta->codiso);
             $cbc = $PaymentTerms->appendChild($cbc);
 
-            // $countPm = 0;
-            // foreach ($credito as $value) {
-            //     $countPm++;
-            //     $cuotaV = $countPm <= 9 ? "Cuota00" . $countPm : "Cuota" . $countPm;
-            //     $PaymentTerms = $xml->createElement('cac:PaymentTerms');
-            //     $PaymentTerms = $Invoice->appendChild($PaymentTerms);
-            //     $cbc = $xml->createElement('cbc:ID', "FormaPago");
-            //     $cbc = $PaymentTerms->appendChild($cbc);
-            //     $cbc = $xml->createElement('cbc:PaymentMeansID', $cuotaV);
-            //     $cbc = $PaymentTerms->appendChild($cbc);
-            //     $cbc = $xml->createElement('cbc:Amount', number_format(round($value->Monto, 2, PHP_ROUND_HALF_UP), 2, '.', ''));
-            //     $cbc->setAttribute('currencyID', $venta->codiso);
-            //     $cbc = $PaymentTerms->appendChild($cbc);
-            //     $cbc = $xml->createElement('cbc:PaymentDueDate', date("Y-m-d", strtotime($value->FechaPago)));
-            //     $cbc = $PaymentTerms->appendChild($cbc);
-            // }
+            $countPm = 0;
+            foreach ($plazos as $plazo) {
+                $countPm++;
+                $cuotaV = $countPm <= 9 ? "Cuota00" . $countPm : "Cuota" . $countPm;
+                $PaymentTerms = $xml->createElement('cac:PaymentTerms');
+                $PaymentTerms = $Invoice->appendChild($PaymentTerms);
+                $cbc = $xml->createElement('cbc:ID', "FormaPago");
+                $cbc = $PaymentTerms->appendChild($cbc);
+                $cbc = $xml->createElement('cbc:PaymentMeansID', $cuotaV);
+                $cbc = $PaymentTerms->appendChild($cbc);
+                $cbc = $xml->createElement('cbc:Amount', number_format(round($plazo->monto, 2, PHP_ROUND_HALF_UP), 2, '.', ''));
+                $cbc->setAttribute('currencyID', $venta->codiso);
+                $cbc = $PaymentTerms->appendChild($cbc);
+                $cbc = $xml->createElement('cbc:PaymentDueDate', date("Y-m-d", strtotime($plazo->fecha)));
+                $cbc = $PaymentTerms->appendChild($cbc);
+            }
         }
 
         if ($venta->idFormaPago == FormaPago::CREDITO_VARIABLE) {
