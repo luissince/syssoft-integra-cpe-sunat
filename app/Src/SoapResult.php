@@ -498,7 +498,7 @@ class SoapResult
             if ($this->ticket) {
                 $this->sendGetStatusGuiaRemision($accessToken, $tipoEnvio);
             } else {
-                $this->sendApiSunatGuiaRemision($accessToken, implode("-", $uri));
+                $this->sendApiSunatGuiaRemision($accessToken, implode("-", $uri), $tipoEnvio);
             }
         } catch (ResponseCurlException $ex) {
             $this->setSuccess(false);
