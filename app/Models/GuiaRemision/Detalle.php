@@ -6,7 +6,7 @@ class Detalle
 {
 	public string $idProducto;
 	public string $nombre;
-	public int $cantidad;
+	public float $cantidad;
 	public string $codigoMedida;
 
     public function __construct(array $data)

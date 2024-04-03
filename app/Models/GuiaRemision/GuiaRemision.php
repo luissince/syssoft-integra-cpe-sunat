@@ -20,7 +20,7 @@ class GuiaRemision
     public string $nombreModalidadTraslado;
     public string $codigoTipoPeso;
     public string $nombreTipoPeso;
-    public int $peso;
+    public float $peso;
     public string $fechaTraslado;
     public string $codigoConductor;
     public string $documentoConductor;

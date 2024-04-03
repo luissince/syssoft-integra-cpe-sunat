@@ -8,12 +8,12 @@ class Detalle
     public string $codigoMedida;
     public string $medida;
     public string $categoria;
-    public int $precio;
-    public int $cantidad;
+    public float $precio;
+    public float $cantidad;
     public string $idImpuesto;
     public string $impuesto;
     public string $codigo;
-    public int $porcentaje;
+    public float $porcentaje;
 
     public function __construct($data)
     {
