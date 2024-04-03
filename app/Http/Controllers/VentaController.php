@@ -112,7 +112,7 @@ class VentaController extends Controller
         $fileName = $empresa->documento . '-RC-' . $currentDate->format('Ymd') . '-' . $correlativoActual;
 
         if ($venta->ticketConsultaSunat != '') {
-            return SunatHelper::getStatus($venta->idVenta, $venta, $empresa, $fileName);
+            return SunatHelper::getStatus($venta, $empresa, $fileName);
         }
 
         $detalles = [];
@@ -167,7 +167,7 @@ class VentaController extends Controller
         $fileName = $empresa->documento . '-RA-' . $currentDate->format('Ymd') . '-' . $correlativoActual;
 
         if ($venta->ticketConsultaSunat != '') {
-            return SunatHelper::getStatus($venta->idVenta, $venta, $empresa, $fileName);
+            return SunatHelper::getStatus($venta, $empresa, $fileName);
         }
 
         $correlativo = ($correlativoActual === 0) ? (intval($correlativoActual) + 1) : ($correlativoActual + 1);
@@ -176,6 +176,6 @@ class VentaController extends Controller
 
         $fileName = $empresa->documento . '-RA-' . $currentDate->format('Ymd') . '-' . $correlativo;
 
-        return SunatHelper::sendSumary($fileName, $xml, $empresa, $certificado, $correlativo, $currentDate);
+        return SunatHelper::sendSumary($fileName, $xml,  $empresa, $certificado, $correlativo, $currentDate);
     }
 }

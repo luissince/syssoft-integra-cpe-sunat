@@ -1,0 +1,29 @@
+name: Docker Image CI - SysSoftIntegra Cpe-Sunat
+
+on:
+  push:
+    branches: 
+      - "test"
+
+jobs:
+  build-and-deploy-app-test:
+    runs-on: self-hosted
+
+    env:  
+      APP_DEBUG: ${{ secrets.APP_DEBUG }}
+      APP_ENV: ${{ secrets.APP_ENV }}
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Copiar .env.example a .env
+        run: cp .env.example .env
+
+      - name: Configurar valores en .env
+        run: |
+          sed -i "s~APP_DEBUG=.*~APP_DEBUG=${APP_DEBUG}~" .env
+          sed -i "s~APP_ENV=.*~APP_ENV=${APP_ENV}~" .env
+
+      - name: Creando y ejecutando contenedor
+        run: docker compose -f docker-compose.yml up --build cpe-sunat-services -d

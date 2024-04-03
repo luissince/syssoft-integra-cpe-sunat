@@ -23,8 +23,15 @@ class EmpresaCotroller extends Controller
 
     public function index()
     {
-        return view('welcome', ["empresa" => $this->empresaRepository->get()]);
+        return response()->json([
+            "message" => "Laravel API"
+        ]);
     }
+
+    // public function index()
+    // {
+    //     return view('welcome', ["empresa" => $this->empresaRepository->get()]);
+    // }
 
     public function create(Request $request)
     {

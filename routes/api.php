@@ -16,17 +16,17 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::post("/create", [EmpresaCotroller::class, 'create']);
+// Route::post("/create", [EmpresaCotroller::class, 'create']);
 
-Route::get("/consultar/{ruc}/{usuarioSol}/{claveSol}/{tipoComprobante}/{serie}/{numeracion}", [EmpresaCotroller::class, 'consultar']);
+// Route::get("/consultar/{ruc}/{usuarioSol}/{claveSol}/{tipoComprobante}/{serie}/{numeracion}", [EmpresaCotroller::class, 'consultar']);
 
-Route::get("/boleta/{idVenta}", [VentaController::class, 'index']);
+// Route::get("/boleta/{idVenta}", [VentaController::class, 'index']);
 
-Route::get("/resumen/{idVenta}", [VentaController::class, 'resumenDiario']);
+// Route::get("/resumen/{idVenta}", [VentaController::class, 'resumenDiario']);
 
-Route::get("/comunicaciondebaja/{idVenta}", [VentaController::class, 'comunicacionDeBaja']);
+// Route::get("/comunicaciondebaja/{idVenta}", [VentaController::class, 'comunicacionDeBaja']);
 
-Route::get("/guiaremision/{idGuiaRemision}", [GuiaRemisionController::class, 'index']);
+// Route::get("/guiaremision/{idGuiaRemision}", [GuiaRemisionController::class, 'index']);
 
 /**
  * Api V1

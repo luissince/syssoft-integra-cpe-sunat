@@ -106,7 +106,7 @@ class SunatHelper
         $path = 'sunat/' . $fileNameXml;
 
         Storage::put('files/' . $path, $xml->saveXML());
-        Sunat::signDocument($fileNameXml, $certificado);
+        Sunat::signDocumentXml($fileNameXml, $certificado);
 
         Sunat::createZip(
             Storage::path("files/sunat/" . $fileName . '.zip'),
@@ -245,13 +245,13 @@ class SunatHelper
         return response()->json($responseData);
     }
 
-    public static function sendSumary(string $fileName, DOMDocument $xml, Empresa $empresa, Certificado $certificado,int $correlativo, DateTime $currentDate)
+    public static function sendSumary(string $fileName, DOMDocument $xml, Empresa $empresa, Certificado $certificado, int $correlativo, DateTime $currentDate)
     {
         $fileNameXml  = $fileName . '.xml';
         $path = 'sunat/' . $fileNameXml;
 
         Storage::put('files/' . $path, $xml->saveXML());
-        Sunat::signDocument($fileNameXml, $certificado);
+        Sunat::signDocumentXml($fileNameXml, $certificado);
 
         Sunat::createZip(
             Storage::path("files/sunat/" . $fileName . '.zip'),
@@ -283,7 +283,7 @@ class SunatHelper
 
         if ($soapResult->isSuccess()) {
             if ($soapResult->isAccepted()) {
-                $updateData["ticketConsultaSunat"] = $soapResult->getTicket();;
+                $updateData["ticketConsultaSunat"] = $soapResult->getTicket();
 
                 $responseData = [
                     "state" => $soapResult->isSuccess(),
@@ -301,7 +301,7 @@ class SunatHelper
                 ];
             }
         } else {
-            return response()->json(["message" => $soapResult->getDescription(),  "update" => $updateData], 500);
+            return response()->json(["message" => $soapResult->getDescription(), "update" => $updateData,], 500);
         }
 
         return response()->json($responseData);
@@ -353,7 +353,7 @@ class SunatHelper
         return response()->json($responseData);
     }
 
-    public static function getStatus(string $idVenta, Venta $venta, Empresa $empresa, string $fileName)
+    public static function getStatus(Venta $venta, Empresa $empresa, string $fileName)
     {
         if ($empresa->tipoEnvio === false) {
             $wdsl = Storage::path('wsdl/desarrollo/billService.wsdl');
@@ -426,7 +426,8 @@ class SunatHelper
                 "codCpe" => $guiaRemision->codigo,
                 "numSerie" => $guiaRemision->serie,
                 "numCpe" => $guiaRemision->numeracion,
-            ]
+            ],
+            false
         );
 
         if ($soapResult->isSuccess()) {
@@ -477,13 +478,13 @@ class SunatHelper
         return response()->json($responseData);
     }
 
-    public static function sendDespatchAdvice(string $fileName, DOMDocument $xml, Certificado $certificado, GuiaRemision $guiaRemision, Empresa $empresa)
+    public static function sendDespatchAdvice(string $fileName, DOMDocument $xml, GuiaRemision $guiaRemision, Empresa $empresa, Certificado $certificado)
     {
         $fileNameXml  = $fileName . '.xml';
         $path = 'sunat/' . $fileNameXml;
 
         Storage::put('files/' . $path, $xml->saveXML());
-        Sunat::signDocument($fileNameXml, $certificado);
+        Sunat::signDocumentXml($fileNameXml, $certificado);
 
         Sunat::createZip(
             Storage::path("files/sunat/" . $fileName . '.zip'),
@@ -506,7 +507,8 @@ class SunatHelper
                 "codCpe" => $guiaRemision->codigo,
                 "numSerie" => $guiaRemision->serie,
                 "numCpe" => $guiaRemision->numeracion,
-            ]
+            ],
+            $empresa->tipoEnvio
         );
 
         if ($soapResult->isSuccess()) {
@@ -568,7 +570,8 @@ class SunatHelper
                 "codCpe" => $guiaRemision->codigo,
                 "numSerie" => $guiaRemision->serie,
                 "numCpe" => $guiaRemision->numeracion,
-            ]
+            ],
+            false
         );
 
         if ($soapResult->isSuccess()) {
@@ -617,7 +620,7 @@ class SunatHelper
         return response()->json($responseData);
     }
 
-    public static function getStatusDespatchAdvice(string $fileName, $idGuiaRemision, GuiaRemision $guiaRemision, Empresa $empresa, $ticket)
+    public static function getStatusDespatchAdvice(string $fileName, GuiaRemision $guiaRemision, Empresa $empresa,string $ticket)
     {
         $soapResult = new SoapResult('', $fileName);
         $soapResult->setTicket($ticket);
@@ -634,7 +637,8 @@ class SunatHelper
                 "codCpe" => $guiaRemision->codigo,
                 "numSerie" => $guiaRemision->serie,
                 "numCpe" => $guiaRemision->numeracion,
-            ]
+            ],
+            $empresa->tipoEnvio
         );
 
         if ($soapResult->isSuccess()) {

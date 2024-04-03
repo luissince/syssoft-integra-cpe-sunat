@@ -59,7 +59,7 @@ class GuiaRemisionController extends Controller
         $fileName = $empresa->documento . "-" . $guiaRemision->codigo . "-" . $guiaRemision->serie . "-" . $guiaRemision->numeracion;
 
         if ($guiaRemision->numeroTicketSunat !== "") {
-            return SunatHelper::getStatusDespatchAdvice($fileName, $guiaRemision->idGuiaRemision, $guiaRemision, $empresa, $guiaRemision->numeroTicketSunat);
+            return SunatHelper::getStatusDespatchAdvice($fileName, $guiaRemision, $empresa, $guiaRemision->numeroTicketSunat);
         }
 
         $detalles = [];
@@ -70,6 +70,6 @@ class GuiaRemisionController extends Controller
         
         $xml = XmlGenerator::createDespatchAdviceXml($guiaRemision, $detalles, $empresa);
 
-        return SunatHelper::sendDespatchAdvice($fileName, $xml, $certificado, $guiaRemision, $empresa);
+        return SunatHelper::sendDespatchAdvice($fileName, $xml, $guiaRemision, $empresa, $certificado);
     }
 }

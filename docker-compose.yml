@@ -3,131 +3,26 @@ version: '3'
 
 # Definición de servicios
 services:
-  # Servicio para la aplicación de test
-  sysintegra-cpe-sunat-services:
+  # Servicio para la aplicación principal
+  cpe-sunat-services:
     # Configuración para construir la imagen del contenedor
     build:
       context: .
       dockerfile: Dockerfile
     # Nombre de la imagen resultante
-    image: sysintegra-cpe-sunat-image
+    image: cpe-sunat-image
     # Conexión a la red llamada 'luis'
     networks:
       - luis
-    # Mapeo de puertos: Mapea el puerto 6000 del host al puerto 80 del contenedor
+    # Mapeo de puertos: Mapea el puerto 6003 del host al puerto 80 del contenedor
     ports:
       - 6003:80
     # Nombre del contenedor
-    container_name: sysintegra-cpe-sunat-test
+    container_name: cpe-sunat-principal
     # Configuración para reiniciar siempre el contenedor
     restart: always
     volumes:
-      - test-cpe-sunat-volumen:/var/www/html/storage/app/files
-
-  # Servicio para la aplicación de legrand 
-  legrand-tiquepos-cpe-sunat-services:
-    # Configuración para construir la imagen del contenedor
-    build:
-      context: .
-      dockerfile: Dockerfile
-    # Nombre de la imagen resultante
-    image: legrand-tiquepos-cpe-sunat-image
-    # Conexión a la red llamada 'luis'
-    networks:
-      - luis
-    # Mapeo de puertos: Mapea el puerto 6013 del host al puerto 80 del contenedor
-    ports:
-      - 6013:80
-    # Nombre del contenedor
-    container_name: legrand-tiquepos-cpe-sunat
-    # Configuración para reiniciar siempre el contenedor
-    restart: always
-    volumes:
-      - legrand-tiquepos-cpe-sunat-volumen:/var/www/html/storage/app/files
-
-  # Servicio para la aplicación de legrand 
-  raices-cpe-sunat-services:
-    # Configuración para construir la imagen del contenedor
-    build:
-      context: .
-      dockerfile: Dockerfile
-    # Nombre de la imagen resultante
-    image: raices-cpe-sunat-image
-    # Conexión a la red llamada 'luis'
-    networks:
-      - luis
-    # Mapeo de puertos: Mapea el puerto 6013 del host al puerto 80 del contenedor
-    ports:
-      - 6017:80
-    # Nombre del contenedor
-    container_name: raices-cpe-sunat
-    # Configuración para reiniciar siempre el contenedor
-    restart: always
-    volumes:
-      - raices-cpe-sunat-volumen:/var/www/html/storage/app/files
-
-  # Servicio para la aplicación de legrand 
-  felicitygirls-tiquepos-cpe-sunat-services:
-    # Configuración para construir la imagen del contenedor
-    build:
-      context: .
-      dockerfile: Dockerfile
-    # Nombre de la imagen resultante
-    image: felicitygirls-tiquepos-cpe-sunat-image
-    # Conexión a la red llamada 'luis'
-    networks:
-      - luis
-    # Mapeo de puertos: Mapea el puerto 6013 del host al puerto 80 del contenedor
-    ports:
-      - 6021:80
-    # Nombre del contenedor
-    container_name: felicitygirls-tiquepos-cpe-sunat
-    # Configuración para reiniciar siempre el contenedor
-    restart: always
-    volumes:
-      - felicitygirls-tiquepos-cpe-sunat-volumen:/var/www/html/storage/app/files
-
-  # Servicio para la aplicación de bodega modelo 
-  bodega-modelo-cpe-sunat-services:
-    # Configuración para construir la imagen del contenedor
-    build:
-      context: .
-      dockerfile: Dockerfile
-    # Nombre de la imagen resultante
-    image: bodega-modelo-cpe-sunat-image
-    # Conexión a la red llamada 'luis'
-    networks:
-      - luis
-    # Mapeo de puertos: Mapea el puerto 6013 del host al puerto 80 del contenedor
-    ports:
-      - 6025:80
-    # Nombre del contenedor
-    container_name: bodega-modelo-cpe-sunat
-    # Configuración para reiniciar siempre el contenedor
-    restart: always
-    volumes:
-      - bodega-modelo-cpe-sunat-volumen:/var/www/html/storage/app/files
-
-  # Servicio para la aplicación de leatsac 
-  leatsac-cpe-sunat-services:
-    # Configuración para construir la imagen del contenedor
-    build:
-      context: .
-      dockerfile: Dockerfile
-    # Nombre de la imagen resultante
-    image: leatsac-cpe-sunat-image
-    # Conexión a la red llamada 'luis'
-    networks:
-      - luis
-    # Mapeo de puertos: Mapea el puerto 6013 del host al puerto 80 del contenedor
-    ports:
-      - 6033:80
-    # Nombre del contenedor
-    container_name: leatsac-cpe-sunat
-    # Configuración para reiniciar siempre el contenedor
-    restart: always
-    volumes:
-      - leatsac-cpe-sunat-volumen:/var/www/html/storage/app/files
+      - cpe-sunat-volumen:/var/www/html/storage/app/files
 
 # Definición de redes
 networks:
@@ -137,9 +32,4 @@ networks:
     external: true
 
 volumes:
-  test-cpe-sunat-volumen:
-  legrand-tiquepos-cpe-sunat-volumen:
-  raices-cpe-sunat-volumen:
-  felicitygirls-tiquepos-cpe-sunat-volumen:
-  bodega-modelo-cpe-sunat-volumen:
-  leatsac-cpe-sunat-volumen:
+  cpe-sunat-volumen:
