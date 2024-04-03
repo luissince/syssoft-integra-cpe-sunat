@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\EmpresaCotroller;
+use App\Http\Controllers\EmpresaController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,4 +14,4 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', [EmpresaCotroller::class, 'index']);
+Route::get('/', [EmpresaController::class, 'index']);
