@@ -1131,9 +1131,9 @@ class XmlGenerator
             $cac_TaxCategory = $cac_TaxSubtotal->appendChild($cac_TaxCategory);
             $cac_TaxScheme = $xml->createElement('cac:TaxScheme');
             $cac_TaxScheme = $cac_TaxCategory->appendChild($cac_TaxScheme);
-            $cbc = $xml->createElement('cbc:ID', '9997');
+            $cbc = $xml->createElement('cbc:ID', '1000');
             $cbc = $cac_TaxScheme->appendChild($cbc);
-            $cbc = $xml->createElement('cbc:Name', 'EXO');
+            $cbc = $xml->createElement('cbc:Name', 'IGV');
             $cbc = $cac_TaxScheme->appendChild($cbc);
             $cbc = $xml->createElement('cbc:TaxTypeCode', 'VAT');
             $cbc = $cac_TaxScheme->appendChild($cbc);
