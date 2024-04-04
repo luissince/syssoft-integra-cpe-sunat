@@ -1121,9 +1121,9 @@ class XmlGenerator
         } else {
             $cac_TaxSubtotal = $xml->createElement('cac:TaxSubtotal');
             $cac_TaxSubtotal = $cac_TaxTotal->appendChild($cac_TaxSubtotal);
-            $cbc = $xml->createElement('cbc:TaxableAmount', number_format(round($sub_total, 2, PHP_ROUND_HALF_UP), 2, '.', ''));
-            $cbc = $cac_TaxSubtotal->appendChild($cbc);
-            $cbc->setAttribute('currencyID', $venta->codiso);
+            // $cbc = $xml->createElement('cbc:TaxableAmount', number_format(round($sub_total, 2, PHP_ROUND_HALF_UP), 2, '.', ''));
+            // $cbc = $cac_TaxSubtotal->appendChild($cbc);
+            // $cbc->setAttribute('currencyID', $venta->codiso);
             $cbc = $xml->createElement('cbc:TaxAmount', number_format(round($impuesto, 2, PHP_ROUND_HALF_UP), 2, '.', ''));
             $cbc = $cac_TaxSubtotal->appendChild($cbc);
             $cbc->setAttribute('currencyID', $venta->codiso);
