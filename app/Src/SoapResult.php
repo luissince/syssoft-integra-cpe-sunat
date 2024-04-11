@@ -12,30 +12,31 @@ use Illuminate\Support\Facades\Storage;
 
 class SoapResult
 {
-    private $wsdlURL;
+    private string $wsdlURL;
 
-    private $file;
+    private string $file;
 
-    private $filename;
+    private string $filename;
 
-    private $success = false;
+    private bool $success = false;
 
-    private $accepted = false;
+    private bool $accepted = false;
 
-    private $hashCode = "";
+    private bool $error = false;
 
-    private $description = "";
+    private string $hashCode = "";
 
-    private $ticket = "";
+    private string $description = "";
 
-    private $message = "";
+    private string $ticket = "";
 
-    private $code = "";
+    private string $message = "";
 
-    private $filebase64 = "";
+    private string $code = "";
 
-    private $hashZip = "";
+    private string $filebase64 = "";
 
+    private string $hashZip = "";
 
     public function __construct($wsdlURL, $filename)
     {
@@ -54,6 +55,8 @@ class SoapResult
             $DOM = new DOMDocument('1.0', 'utf-8');
             $DOM->preserveWhiteSpace = FALSE;
             $DOM->loadXML($result);
+
+            error_log(json_encode($result));
 
             $DocXML = $DOM->getElementsByTagName('applicationResponse');
             $response = "";
@@ -155,6 +158,7 @@ class SoapResult
             }
 
             $this->setSuccess(false);
+            $this->setError(true);
             $this->setCode("-1");
             $this->setDescription($ex->getMessage());
         }
@@ -213,6 +217,8 @@ class SoapResult
             $DOM = new DOMDocument('1.0', 'utf-8');
             $DOM->preserveWhiteSpace = FALSE;
             $DOM->loadXML($result);
+
+            error_log(json_encode($result));
 
             $DocXML = $DOM->getElementsByTagName('statusCode');
             $statusCode = "";
@@ -506,6 +512,7 @@ class SoapResult
             $this->setMessage($ex->getMensaje());
         } catch (Exception $ex) {
             $this->setSuccess(false);
+            $this->setError(true);
             $this->setCode($ex->getCode());
             $this->setMessage($ex->getMessage());
         } finally {
@@ -635,8 +642,8 @@ class SoapResult
 
                 $result = (object)json_decode($response);
 
-                $codigo = isset($result->cod) ? $result->cod : '';
-                $mensaje = isset($result->exc) ? $result->exc : $result->msg;
+                $codigo =  $result->cod ?? '';
+                $mensaje = $result->exc ?? $result->msg;
 
                 throw new ResponseCurlException($codigo, $mensaje, $http_code, null);
             } else {
@@ -830,8 +837,8 @@ class SoapResult
 
                     $result = (object)json_decode($response);
 
-                    $codigo = isset($result->cod) ? $result->cod : '';
-                    $mensaje = isset($result->msg) ? $result->msg : '';
+                    $codigo =  $result->cod ?? '';
+                    $mensaje = $result->msg ?? '';
                     throw new ResponseCurlException($codigo, $mensaje, $http_code, null);
                 } else {
                     // if (file_exists('../files/' . $this->filename . '.xml')) {
@@ -882,32 +889,42 @@ class SoapResult
         $this->hashZip = hash('sha256', $zipContent);
     }
 
-    public function isSuccess()
+    public function isSuccess(): bool
     {
         return $this->success;
     }
 
-    public function setSuccess($success)
+    public function setSuccess(bool $success)
     {
         $this->success = $success;
     }
 
-    public function isAccepted()
+    public function isAccepted(): bool
     {
         return $this->accepted;
     }
 
-    public function setAccepted($accepted)
+    public function setAccepted(bool $accepted)
     {
         $this->accepted = $accepted;
     }
 
-    public function getCode()
+    public function setError(bool $error)
+    {
+        $this->error = $error;
+    }
+
+    public function getError(): bool
+    {
+        return $this->error;
+    }
+
+    public function getCode(): string
     {
         return $this->code;
     }
 
-    public function setCode($code)
+    public function setCode(string $code)
     {
         $this->code = $code;
     }
