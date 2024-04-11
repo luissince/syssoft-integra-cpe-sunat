@@ -148,29 +148,31 @@ class SunatHelper
                 "description" => $soapResult->getDescription(),
                 "update" => $updateData
             ];
+
+            return response()->json($responseData);
         } else {
-            $updateData = [
-                "xmlSunat" => $soapResult->getCode(),
-                "xmlDescripcion" => $soapResult->getDescription(),
-            ];
+            if ($soapResult->getError()) {
+                return response()->json(["message" => $soapResult->getDescription()], 500);
+            } else {
+                $updateData = [
+                    "xmlSunat" => $soapResult->getCode(),
+                    "xmlDescripcion" => $soapResult->getDescription(),
+                ];
 
-            if ($soapResult->getCode() == "1033") {
-                $updateData["xmlSunat"] = "0";
-            }
+                if ($soapResult->getCode() == "1033") {
+                    $updateData["xmlSunat"] = "0";
+                }
 
-            if ($soapResult->getCode() == "1033") {
                 $responseData = [
                     "state" => false,
                     "code" => $soapResult->getCode(),
                     "description" => $soapResult->getDescription(),
                     "update" => $updateData
                 ];
-            } else {
-                return response()->json(["message" => $soapResult->getDescription()], 500);
+
+                return response()->json($responseData);
             }
         }
-
-        return response()->json($responseData);
     }
 
     public static function sendSumaryToSunat(string $fileName, DOMDocument $xml, string $idVenta, $empresa, int $correlativo, DateTime $currentDate)
@@ -621,7 +623,7 @@ class SunatHelper
         return response()->json($responseData);
     }
 
-    public static function getStatusDespatchAdvice(string $fileName, GuiaRemision $guiaRemision, Empresa $empresa,string $ticket)
+    public static function getStatusDespatchAdvice(string $fileName, GuiaRemision $guiaRemision, Empresa $empresa, string $ticket)
     {
         $soapResult = new SoapResult('', $fileName);
         $soapResult->setTicket($ticket);
@@ -659,12 +661,20 @@ class SunatHelper
                 "description" => $soapResult->getMessage(),
                 "update" => $updateData
             ];
+
+            return response()->json($responseData);
         } else {
-            if ($soapResult->getCode() == "1033") {
+            if ($soapResult->getError()) {
+                return response()->json(["message" => $soapResult->getMessage()], 500);
+            } else {
                 $updateData = [
-                    "xmlSunat" => "0",
+                    "xmlSunat" => $soapResult->getCode(),
                     "xmlDescripcion" => $soapResult->getMessage(),
                 ];
+
+                if ($soapResult->getCode() == "1033") {
+                    $updateData["xmlSunat"] = "0";
+                }
 
                 $responseData = [
                     "state" => false,
@@ -672,13 +682,8 @@ class SunatHelper
                     "description" => $soapResult->getMessage(),
                     "update" => $updateData
                 ];
-            } else {
-                return response()->json([
-                    "message" => $soapResult->getMessage()
-                ], 500);
             }
+            return response()->json($responseData);
         }
-
-        return response()->json($responseData);
     }
 }

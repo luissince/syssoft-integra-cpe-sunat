@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Consulta;
-use App\Repositories\EmpresaRepository;
 use App\Src\SoapResult;
 use App\Src\Sunat;
 use Exception;
@@ -13,25 +12,12 @@ use Illuminate\Support\Facades\Storage;
 
 class EmpresaController extends Controller
 {
-
-    private $empresaRepository;
-
-    public function __construct(EmpresaRepository $empresaRepository)
-    {
-        $this->empresaRepository = $empresaRepository;
-    }
-
     public function index()
     {
         return response()->json([
             "message" => "Laravel API"
         ]);
     }
-
-    // public function index()
-    // {
-    //     return view('welcome', ["empresa" => $this->empresaRepository->get()]);
-    // }
 
     public function create(Request $request)
     {

@@ -15,3 +15,5 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', [EmpresaController::class, 'index']);
+
+Route::get('/increment', [EmpresaController::class, 'increment']);
