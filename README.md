@@ -122,7 +122,7 @@ APP_ENV="local"
 ### 6. Ejecute el siguiente comando para ejecutar en modo desarrollo
 
 ```bash
-php artisan serve --host=0.0.0.0 --port:9000
+php artisan serve --host=0.0.0.0 --port=9000
 ```
 
 ### 7. Configuración para Ejecutar GitHub Actions para el CI/CD:

@@ -56,8 +56,6 @@ class SoapResult
             $DOM->preserveWhiteSpace = FALSE;
             $DOM->loadXML($result);
 
-            error_log(json_encode($result));
-
             $DocXML = $DOM->getElementsByTagName('applicationResponse');
             $response = "";
             foreach ($DocXML as $Nodo) {
@@ -217,8 +215,6 @@ class SoapResult
             $DOM = new DOMDocument('1.0', 'utf-8');
             $DOM->preserveWhiteSpace = FALSE;
             $DOM->loadXML($result);
-
-            error_log(json_encode($result));
 
             $DocXML = $DOM->getElementsByTagName('statusCode');
             $statusCode = "";
