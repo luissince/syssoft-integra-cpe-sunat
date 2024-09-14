@@ -8,46 +8,12 @@ use App\Models\Certificado;
 use App\Models\Empresa;
 use App\Models\GuiaRemision\Detalle;
 use App\Models\GuiaRemision\GuiaRemision;
-use App\Repositories\EmpresaRepository;
-use App\Repositories\GuiaRemisionRepository;
-use App\Repositories\SucursalRepository;
 use Illuminate\Http\Request;
 
 class GuiaRemisionController extends Controller
 {
-    private $guiaRemisionRepository;
-
-    private $empresaRepository;
-
-    private $sucursalRepository;
-
-    public function __construct(
-        GuiaRemisionRepository $guiaRemisionRepository,
-        EmpresaRepository $empresaRepository,
-        SucursalRepository $sucursalRepository
-    ) {
-        $this->guiaRemisionRepository = $guiaRemisionRepository;
-        $this->empresaRepository = $empresaRepository;
-        $this->sucursalRepository = $sucursalRepository;
-    }
-
-    public function index($idGuiaRemision)
-    {
-        $guiaRemision = $this->guiaRemisionRepository->obtenerGuiaRemisionPorId($idGuiaRemision);
-
-        $empresa = $this->empresaRepository->obtenerEmpresa();
-
-        $fileName = $empresa->documento . "-" . $guiaRemision->codigo . "-" . $guiaRemision->serie . "-" . $guiaRemision->numeracion;
-
-        if ($guiaRemision->numeroTicketSunat !== "") {
-            return SunatHelper::getStatusDespatchAdviceToSunat($fileName, $idGuiaRemision, $guiaRemision, $empresa, $guiaRemision->numeroTicketSunat);
-        }
-
-        $detalle = $this->guiaRemisionRepository->obtenerDetalleGuiaRemisionPorId($idGuiaRemision);
-
-        $xml = XmlGenerator::generateDespatchAdviceXml($guiaRemision, $detalle, $empresa);
-
-        return SunatHelper::sendDespatchAdviceSunat($fileName, $xml, $idGuiaRemision, $guiaRemision, $empresa);
+    public function __construct() {
+        
     }
 
     public function sendGuiaRemision(Request $request)

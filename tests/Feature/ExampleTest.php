@@ -18,50 +18,50 @@ class ExampleTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function testBoletaRoute()
-    {
-        $response = $this->get('/api/boleta/VT0001');
+    // public function testBoletaRoute()
+    // {
+    //     $response = $this->get('/api/boleta/VT0001');
 
-        $response->assertStatus(200);
+    //     $response->assertStatus(200);
 
-        // Verifica que la respuesta JSON sea exactamente la esperada
-        // $response->assertExactJson([
-        //     "state" => true,
-        //     "accept" => true,
-        //     "code" => "0",
-        //     "description" => "La Factura numero F001-2, ha sido aceptada"
-        // ]);
-    }
+    //     // Verifica que la respuesta JSON sea exactamente la esperada
+    //     // $response->assertExactJson([
+    //     //     "state" => true,
+    //     //     "accept" => true,
+    //     //     "code" => "0",
+    //     //     "description" => "La Factura numero F001-2, ha sido aceptada"
+    //     // ]);
+    // }
 
-    public function testFacturaRoute()
-    {
-        $response = $this->get('/api/boleta/VT0002');
+    // public function testFacturaRoute()
+    // {
+    //     $response = $this->get('/api/boleta/VT0002');
 
-        $response->assertStatus(200);
+    //     $response->assertStatus(200);
 
-        // Verifica que la respuesta JSON sea exactamente la esperada
-        // $response->assertExactJson([
-        //     "state" => true,
-        //     "accept" => true,
-        //     "code" => "0",
-        //     "description" => "La Factura numero F001-2, ha sido aceptada"
-        // ]);
-    }
+    //     // Verifica que la respuesta JSON sea exactamente la esperada
+    //     // $response->assertExactJson([
+    //     //     "state" => true,
+    //     //     "accept" => true,
+    //     //     "code" => "0",
+    //     //     "description" => "La Factura numero F001-2, ha sido aceptada"
+    //     // ]);
+    // }
 
-    public function testFacturaCreditoRoute()
-    {
-        $response = $this->get('/api/boleta/VT0003');
+    // public function testFacturaCreditoRoute()
+    // {
+    //     $response = $this->get('/api/boleta/VT0003');
 
-        $response->assertStatus(200);
+    //     $response->assertStatus(200);
 
-        // Verifica que la respuesta JSON sea exactamente la esperada
-        // $response->assertExactJson([
-        //     "state" => true,
-        //     "accept" => true,
-        //     "code" => "0",
-        //     "description" => "La Factura numero F001-2, ha sido aceptada"
-        // ]);
-    }
+    //     // Verifica que la respuesta JSON sea exactamente la esperada
+    //     // $response->assertExactJson([
+    //     //     "state" => true,
+    //     //     "accept" => true,
+    //     //     "code" => "0",
+    //     //     "description" => "La Factura numero F001-2, ha sido aceptada"
+    //     // ]);
+    // }
 
     // public function testGuiaRemisionRoute()
     // {

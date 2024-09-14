@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-class Plazo
+class Cuota
 {
-    public int $idPlazo;
+    public int $idCuota;
     public string $idVenta;
     public int $cuota;
     public string $fecha;
@@ -14,7 +14,7 @@ class Plazo
 
     public function __construct($data)
     {
-        $this->idPlazo = $data['idPlazo'] ?? 0;
+        $this->idCuota = $data['idCuota'] ?? 0;
         $this->idVenta = $data['idVenta'] ?? '';
         $this->cuota = $data['cuota'] ?? 0;
         $this->fecha = $data['fecha'] ?? '';

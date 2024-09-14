@@ -16,18 +16,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Route::post("/create", [EmpresaController::class, 'create']);
-
-// Route::get("/consultar/{ruc}/{usuarioSol}/{claveSol}/{tipoComprobante}/{serie}/{numeracion}", [EmpresaController::class, 'consultar']);
-
-// Route::get("/boleta/{idVenta}", [VentaController::class, 'index']);
-
-// Route::get("/resumen/{idVenta}", [VentaController::class, 'resumenDiario']);
-
-// Route::get("/comunicaciondebaja/{idVenta}", [VentaController::class, 'comunicacionDeBaja']);
-
-// Route::get("/guiaremision/{idGuiaRemision}", [GuiaRemisionController::class, 'index']);
-
 /**
  * Api V1
  */

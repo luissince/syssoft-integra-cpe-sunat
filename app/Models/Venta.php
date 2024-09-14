@@ -29,7 +29,7 @@ class Venta
 
     public function __construct($data)
     {
-        $this->idVenta = $data['idVenta'];
+        $this->idVenta = $data['idVenta'] ?? "";
         $this->comprobante = $data['comprobante'];
         $this->codigoVenta = $data['codigoVenta'];
         $this->serie = $data['serie'];
@@ -39,13 +39,13 @@ class Venta
         $this->codigoCliente = $data['codigoCliente'];
         $this->documento = $data['documento'];
         $this->informacion = $data['informacion'];
-        $this->direccion = $data['direccion'] === null ? "" : $data['direccion'];
+        $this->direccion = $data['direccion']  ?? "";
         $this->usuario = $data['usuario'];
         $this->fecha = $data['fecha'];
         $this->hora = $data['hora'];
-        $this->fechaCorrelativo = $data['fechaCorrelativo'] === null ? "" : $data['fechaCorrelativo'];
-        $this->correlativo = $data['correlativo'] === null ? 0 : $data['correlativo'];
-        $this->ticketConsultaSunat = $data['ticketConsultaSunat'] === null ? "" : $data['ticketConsultaSunat'];
+        $this->fechaCorrelativo = $data['fechaCorrelativo']  ?? "";
+        $this->correlativo = $data['correlativo'] ?? 0;
+        $this->ticketConsultaSunat = $data['ticketConsultaSunat']  ?? "";
         $this->idFormaPago = $data['idFormaPago'];
         $this->estado = $data['estado'];
         $this->simbolo = $data['simbolo'];
