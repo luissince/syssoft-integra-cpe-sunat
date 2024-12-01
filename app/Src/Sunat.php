@@ -19,42 +19,10 @@ class Sunat
     {
     }
 
-    public static function signDocumentSunat($filename)
+    public static function signDocumentXml(string $path, string $filename, Certificado $certificado)
     {
         $doc = new DOMDocument();
-        $doc->load(Storage::path("files/sunat/" . $filename));
-
-        $objDSig = new XMLSecurityDSig();
-        $objDSig->setCanonicalMethod(XMLSecurityDSig::EXC_C14N);
-        $objDSig->addReference(
-            $doc,
-            XMLSecurityDSig::SHA1,
-            array('http://www.w3.org/2000/09/xmldsig#enveloped-signature'),
-            array('force_uri' => true)
-        );
-
-        $privateKeyPath = Storage::get('files/certificado/private_key.pem');
-        $publicKeyPath = Storage::get('files/certificado/public_key.pem');
-
-        $objKey = new XMLSecurityKey(XMLSecurityKey::RSA_SHA1, array('type' => 'private'));
-        $objKey->loadKey($privateKeyPath, false);
-
-        $objDSig->sign($objKey);
-        $objDSig->add509Cert($publicKeyPath, true, false);
-        $objDSig->appendSignature($doc->getElementsByTagName('ExtensionContent')->item(0));
-
-        // Guarda el archivo XML en la carpeta de almacenamiento de Laravel
-        $xmlOutputPath = 'files/sunat/' . $filename;
-        // Storage::disk('public')->put($xmlOutputPath , $doc->saveXML());
-        Storage::put($xmlOutputPath, $doc->saveXML());
-
-        self::$filename = $xmlOutputPath;
-    }
-
-    public static function signDocumentXml(string $filename, Certificado $certificado)
-    {
-        $doc = new DOMDocument();
-        $doc->load(Storage::path("files/sunat/" . $filename));
+        $doc->load(Storage::path($path . $filename));
 
         $objDSig = new XMLSecurityDSig();
         $objDSig->setCanonicalMethod(XMLSecurityDSig::EXC_C14N);
@@ -75,7 +43,7 @@ class Sunat
         $objDSig->add509Cert($publicKeyPath, true, false);
         $objDSig->appendSignature($doc->getElementsByTagName('ExtensionContent')->item(0));
 
-        $xmlOutputPath = 'files/sunat/' . $filename;
+        $xmlOutputPath = $path . $filename;
         Storage::put($xmlOutputPath, $doc->saveXML());
 
         self::$filename = $xmlOutputPath;
@@ -168,7 +136,7 @@ class Sunat
         </soapenv:Envelope>';
     }
 
-    public static function xmlGetStatus($NumeroDocumento, $UsuarioSol, $ClaveSol, $ticket)
+    public static function xmlGetStatusTicket($NumeroDocumento, $UsuarioSol, $ClaveSol, $ticket)
     {
         return '<?xml version="1.0" encoding="UTF-8"?>
         <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://service.sunat.gob.pe" xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
@@ -188,53 +156,7 @@ class Sunat
         </soapenv:Envelope>';
     }
 
-    public static function xmlGetStatusCdr($get)
-    {
-        return '<?xml version="1.0" encoding="UTF-8"?>
-        <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://service.sunat.gob.pe" xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
-        <soapenv:Header>
-            <wsse:Security>
-                <wsse:UsernameToken>
-                    <wsse:Username>' . $get["rucSol"] . '' . $get["userSol"] . '</wsse:Username>
-                    <wsse:Password>' . $get["passSol"] . '</wsse:Password>
-                </wsse:UsernameToken>
-            </wsse:Security>
-        </soapenv:Header>
-        <soapenv:Body>
-            <ser:getStatusCdr>
-                <rucComprobante>' . $get["ruc"] . '</rucComprobante>
-                <tipoComprobante>' . $get["tipo"] . '</tipoComprobante>
-                <serieComprobante>' . $get["serie"] . '</serieComprobante>
-                <numeroComprobante>' . $get["numero"] . '</numeroComprobante>
-            </ser:getStatusCdr>
-        </soapenv:Body>
-        </soapenv:Envelope>';
-    }
-
-    public static function xmlGetValidServiceSunat($get)
-    {
-        return '<?xml version="1.0" encoding="UTF-8"?>
-        <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://service.sunat.gob.pe" xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
-        <soapenv:Header>
-            <wsse:Security>
-                <wsse:UsernameToken>
-                    <wsse:Username>' . $get["rucSol"] . '' . $get["userSol"] . '</wsse:Username>
-                    <wsse:Password>' . $get["passSol"] . '</wsse:Password>
-                </wsse:UsernameToken>
-            </wsse:Security>
-        </soapenv:Header>
-        <soapenv:Body>
-            <ser:getStatus>
-                <rucComprobante>' . $get["ruc"] . '</rucComprobante>
-                <tipoComprobante>' . $get["tipo"] . '</tipoComprobante>
-                <serieComprobante>' . $get["serie"] . '</serieComprobante>
-                <numeroComprobante>' . $get["numero"] . '</numeroComprobante>
-            </ser:getStatus>
-        </soapenv:Body>
-        </soapenv:Envelope>';
-    }
-
-    public static function xmlGetValidService(Consulta $consulta)
+    public static function xmlGetStatus(Consulta $consulta)
     {
         return '<?xml version="1.0" encoding="UTF-8"?>
         <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://service.sunat.gob.pe" xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
@@ -253,6 +175,29 @@ class Sunat
                 <serieComprobante>' . $consulta->serie . '</serieComprobante>
                 <numeroComprobante>' . $consulta->numeracion . '</numeroComprobante>
             </ser:getStatus>
+        </soapenv:Body>
+        </soapenv:Envelope>';
+    }
+
+    public static function xmlGetCdr(Consulta $consulta)
+    {
+        return '<?xml version="1.0" encoding="UTF-8"?>
+        <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://service.sunat.gob.pe" xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+        <soapenv:Header>
+            <wsse:Security>
+                <wsse:UsernameToken>
+                    <wsse:Username>' . $consulta->ruc . '' . $consulta->usuarioSol . '</wsse:Username>
+                    <wsse:Password>' . $consulta->claveSol . '</wsse:Password>
+                </wsse:UsernameToken>
+            </wsse:Security>
+        </soapenv:Header>
+        <soapenv:Body>
+            <ser:getStatusCdr>
+                <rucComprobante>' .  $consulta->ruc . '</rucComprobante>
+                <tipoComprobante>' . $consulta->tipoComprobante . '</tipoComprobante>
+                <serieComprobante>' .  $consulta->serie  . '</serieComprobante>
+                <numeroComprobante>' .  $consulta->numeracion . '</numeroComprobante>
+            </ser:getStatusCdr>
         </soapenv:Body>
         </soapenv:Envelope>';
     }

@@ -32,7 +32,10 @@ Route::post("/v1/anular/factura", [VentaController::class, 'sendComunicacionDeBa
 // Ruta para manejar el envío de una guía de remisión
 Route::post("/v1/guia/remision", [GuiaRemisionController::class, 'sendGuiaRemision']);
 
-// Ruta para manejar la consulta de información
-Route::post("/v1/consultar", [EmpresaController::class, 'sendConsulta']);
+// Ruta para manejar el estado de un comprobante
+Route::post("/v1/consultar", [EmpresaController::class, 'getStatus']);
+
+// Ruta para manejar el cdr de un comprobante
+Route::post("/v1/cdr", [EmpresaController::class, 'getCdr']);
 
 

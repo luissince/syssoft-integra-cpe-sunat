@@ -84,51 +84,7 @@ class EmpresaController extends Controller
         }
     }
 
-    public function consultar(string $ruc,string $usuarioSol, string $claveSol, string $tipoComprobante, string $serie, string $numeracion)
-    {
-        $get['rucSol'] = $ruc;
-        $get['userSol'] = $usuarioSol;
-        $get['passSol'] = $claveSol;
-        $get['ruc'] = $ruc;
-        $get['tipo'] = $tipoComprobante;
-        $get['serie'] = $serie;
-        $get['numero'] = $numeracion;
-        $get['cdr'] = '';
-
-        $arguments = [
-            $get["ruc"],
-            $get["tipo"],
-            $get["serie"],
-            intval($get["numero"])
-        ];
-
-        $wdsl = Storage::path('wsdl/billConsultService.wsdl');
-
-        $soapResult = new SoapResult($wdsl, implode('-', $arguments));
-        $soapResult->sendGetStatusValid(Sunat::xmlGetValidServiceSunat($get));
-
-        if ($soapResult->isSuccess()) {
-            if ($soapResult->isAccepted()) {
-                return response()->json([
-                    "state" => $soapResult->isSuccess(),
-                    "accepted" => $soapResult->isAccepted(),
-                    "code" => $soapResult->getCode(),
-                    "message" => $soapResult->getMessage()
-                ]);
-            } else {
-                return response()->json([
-                    "state" => $soapResult->isSuccess(),
-                    "accepted" => $soapResult->isAccepted(),
-                    "code" => $soapResult->getCode(),
-                    "message" => $soapResult->getMessage(),
-                ]);
-            }
-        } else {
-            return response()->json(["message" => $soapResult->getMessage()], 500);
-        }
-    }
-
-    public function sendConsulta(Request $request)
+    public function getStatus(Request $request)
     {
         $consulta = new Consulta($request);
 
@@ -142,7 +98,7 @@ class EmpresaController extends Controller
         $wdsl = Storage::path('wsdl/billConsultService.wsdl');
 
         $soapResult = new SoapResult($wdsl, implode('-', $arguments));
-        $soapResult->sendGetStatusValid(Sunat::xmlGetValidService($consulta));
+        $soapResult->sendGetStatusValid(Sunat::xmlGetStatus($consulta));
 
         if ($soapResult->isSuccess()) {
             if ($soapResult->isAccepted()) {
@@ -163,5 +119,44 @@ class EmpresaController extends Controller
         } else {
             return response()->json(["message" => $soapResult->getMessage()], 500);
         }
+    }   
+
+    public function getCdr(Request $request) {
+        $consulta = new Consulta($request);
+
+        $arguments = [
+            $consulta->ruc,
+            $consulta->tipoComprobante,
+            $consulta->serie,
+            $consulta->numeracion
+        ];
+
+        $wdsl = Storage::path('wsdl/billConsultService.wsdl');
+
+        $soapResult = new SoapResult($wdsl, implode('-', $arguments));
+        $soapResult->sendGetCdrValid(Sunat::xmlGetCdr($consulta));
+
+        if ($soapResult->isSuccess()) {
+            if ($soapResult->isAccepted()) {
+                return response()->json([
+                    "state" => $soapResult->isSuccess(),
+                    "accepted" => $soapResult->isAccepted(),
+                    "code" => $soapResult->getCode(),
+                    "message" => $soapResult->getMessage(),
+                    "fileName" => $soapResult->getFileName(),
+                    "xml" => $soapResult->getFile(),
+                ]);
+            } else {
+                return response()->json([
+                    "state" => $soapResult->isSuccess(),
+                    "accepted" => $soapResult->isAccepted(),
+                    "code" => $soapResult->getCode(),
+                    "message" => $soapResult->getMessage(),
+                ]);
+            }
+        } else {
+            return response()->json(["message" => $soapResult->getMessage()], 500);
+        }
     }
+
 }
