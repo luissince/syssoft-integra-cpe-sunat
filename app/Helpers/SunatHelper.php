@@ -322,7 +322,19 @@ class SunatHelper
 
             return response()->json($responseData);
         } else {
-            if ($soapResult->getError()) {
+            if ($soapResult->getCode() == "1032") {
+                $updateData = [
+                    "xmlSunat" => $soapResult->getCode(),
+                    "xmlDescripcion" => $soapResult->getMessage(),
+                ];
+
+                $responseData = [
+                    "state" => false,
+                    "code" => $soapResult->getCode(),
+                    "description" => $soapResult->getMessage(),
+                    "update" => $updateData
+                ];
+            } else if ($soapResult->getError()) {
                 return response()->json(["message" => $soapResult->getMessage()], 500);
             } else {
                 $updateData = [
