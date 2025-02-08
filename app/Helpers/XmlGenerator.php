@@ -389,7 +389,7 @@ class XmlGenerator
      * @param Detalle[] $detalles
      * @param Cuota[] $cuotas
      */
-    public static function createInvoiceXml(Venta $venta, array $detalles, array $cuotas,Empresa $empresa, Sucursal $sucursal): DOMDocument
+    public static function createInvoiceXml(Venta $venta, array $detalles, array $cuotas, Empresa $empresa, Sucursal $sucursal): DOMDocument
     {
         $sub_total = array_reduce($detalles, function ($acumulador, $producto) {
             $igv = floatval($producto->porcentaje) / 100.00;
@@ -550,6 +550,43 @@ class XmlGenerator
             $cbc = $PaymentTerms->appendChild($cbc);
         }
 
+        // if ($venta->idFormaPago == FormaPago::CREDITO_FIJO) {
+        //     $PaymentTerms = $xml->createElement('cac:PaymentTerms');
+        //     $PaymentTerms = $Invoice->appendChild($PaymentTerms);
+
+        //     $cbc = $xml->createElement('cbc:ID', "FormaPago");
+        //     $PaymentTerms->appendChild($cbc);
+
+        //     $cbc = $xml->createElement('cbc:PaymentMeansID', "Credito");
+        //     $PaymentTerms->appendChild($cbc);
+
+        //     $cbc = $xml->createElement('cbc:Amount', round($total, 2));
+        //     $cbc->setAttribute('currencyID', $venta->codiso);
+        //     $PaymentTerms->appendChild($cbc);
+
+        //     $countPm = 0;
+        //     foreach ($cuotas as $cuota) {
+        //         $countPm++;
+        //         $cuotaV = sprintf("Cuota%03d", $countPm); // Genera Cuota001, Cuota002...
+
+        //         $PaymentTerms = $xml->createElement('cac:PaymentTerms');
+        //         $PaymentTerms = $Invoice->appendChild($PaymentTerms);
+
+        //         $cbc = $xml->createElement('cbc:ID', $cuotaV);
+        //         $PaymentTerms->appendChild($cbc);
+
+        //         $cbc = $xml->createElement('cbc:PaymentMeansID', $cuotaV);
+        //         $PaymentTerms->appendChild($cbc);
+
+        //         $cbc = $xml->createElement('cbc:PaymentDueDate', date("Y-m-d", strtotime($cuota->fecha)));
+        //         $PaymentTerms->appendChild($cbc);
+
+        //         $cbc = $xml->createElement('cbc:Amount', round($cuota->monto, 2));
+        //         $cbc->setAttribute('currencyID', $venta->codiso);
+        //         $PaymentTerms->appendChild($cbc);
+        //     }
+        // }
+
         if ($venta->idFormaPago == FormaPago::CREDITO_FIJO) {
             $PaymentTerms = $xml->createElement('cac:PaymentTerms');
             $PaymentTerms = $Invoice->appendChild($PaymentTerms);
@@ -564,7 +601,8 @@ class XmlGenerator
             $countPm = 0;
             foreach ($cuotas as $cuota) {
                 $countPm++;
-                $cuotaV = $countPm <= 9 ? "Cuota00" . $countPm : "Cuota" . $countPm;
+                $cuotaV = sprintf("Cuota%03d", $countPm);
+
                 $PaymentTerms = $xml->createElement('cac:PaymentTerms');
                 $PaymentTerms = $Invoice->appendChild($PaymentTerms);
                 $cbc = $xml->createElement('cbc:ID', "FormaPago");
