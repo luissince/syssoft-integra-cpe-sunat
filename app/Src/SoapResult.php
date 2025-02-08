@@ -869,7 +869,7 @@ class SoapResult
                 unlink(Storage::path($path . $this->filename . '.zip'));
             }
 
-            throw new Exception($ex->getMessage(), -1);
+            throw new Exception($ex->getMessage(), $ex->getCode());
         }
     }
 
