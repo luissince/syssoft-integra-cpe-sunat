@@ -6,8 +6,8 @@ use App\Helpers\SunatHelper;
 use App\Helpers\XmlGenerator;
 use App\Models\Certificado;
 use App\Models\Empresa;
-use App\Models\GuiaRemision\Detalle;
 use App\Models\GuiaRemision\GuiaRemision;
+use App\Models\GuiaRemision\GuiaRemisionDetalle;
 use Illuminate\Http\Request;
 
 class GuiaRemisionController extends Controller
@@ -29,8 +29,8 @@ class GuiaRemisionController extends Controller
         }
 
         $detalles = [];
-        foreach ($request->detalle as $detalleData) {
-            $detalle = new Detalle($detalleData);
+        foreach ($request->detalles as $detalleData) {
+            $detalle = new GuiaRemisionDetalle($detalleData);
             $detalles[] = $detalle;
         }
         

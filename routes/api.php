@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\EmpresaController;
 use App\Http\Controllers\GuiaRemisionController;
+use App\Http\Controllers\NotaDeCreditoController;
 use App\Http\Controllers\VentaController;
 use Illuminate\Support\Facades\Route;
 
@@ -28,6 +29,15 @@ Route::post("/v1/anular/boleta", [VentaController::class, 'sendResumenDiario']);
 
 // Ruta para manejar la anulación de una factura
 Route::post("/v1/anular/factura", [VentaController::class, 'sendComunicacionDeBaja']);
+
+// Ruta para manejar la nota de crédito
+Route::post("/v1/nota/credito", [NotaDeCreditoController::class, 'sendNotaDeCredito']);
+
+// Ruta para manejar la nota de crédito - boleta
+Route::post("/v1/nota/credito/anular/boleta", [NotaDeCreditoController::class, 'sendResumenDiario']);
+
+// Ruta para manejar la nota de crédito - factura
+Route::post("/v1/nota/credito/anular/factura", [NotaDeCreditoController::class, 'sendComunicacionDeBaja']);
 
 // Ruta para manejar el envío de una guía de remisión
 Route::post("/v1/guia/remision", [GuiaRemisionController::class, 'sendGuiaRemision']);

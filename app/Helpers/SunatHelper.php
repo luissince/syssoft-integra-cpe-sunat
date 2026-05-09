@@ -5,6 +5,7 @@ namespace App\Helpers;
 use App\Models\Certificado;
 use App\Models\Empresa;
 use App\Models\GuiaRemision\GuiaRemision;
+use App\Models\NotaCredito;
 use App\Models\Venta;
 use App\Src\SoapResult;
 use App\Src\Sunat;
@@ -24,6 +25,7 @@ class SunatHelper
         $path = 'files/sunat/' . $empresa->documento . '/';
 
         Storage::put($path . $fileNameXml, $xml->saveXML());
+        
         Sunat::signDocumentXml($path, $fileNameXml, $certificado);
 
         Sunat::createZip(
@@ -155,7 +157,7 @@ class SunatHelper
         return response()->json($responseData);
     }
 
-    public static function getStatus(Venta $venta, Empresa $empresa, string $fileName)
+    public static function getStatus(string $ticketConsultaSunat, Empresa $empresa, string $fileName)
     {
         // files/sunat/10764233889/
         $path = 'files/sunat/' . $empresa->documento . '/';
@@ -167,7 +169,7 @@ class SunatHelper
         }
 
         $soapResult = new SoapResult($wdsl, $fileName);
-        $soapResult->setTicket($venta->ticketConsultaSunat);
+        $soapResult->setTicket($ticketConsultaSunat);
         $soapResult->sendGetStatusTicket(Sunat::xmlGetStatusTicket(
             $empresa->documento,
             $empresa->usuarioSolSunat,

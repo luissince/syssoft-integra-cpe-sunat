@@ -2,7 +2,7 @@
 
 namespace App\Models\GuiaRemision;
 
-class Detalle
+class GuiaRemisionDetalle
 {
 	public string $idProducto;
 	public string $nombre;

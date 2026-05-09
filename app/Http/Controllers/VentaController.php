@@ -5,11 +5,10 @@ namespace App\Http\Controllers;
 use App\Helpers\SunatHelper;
 use App\Helpers\XmlGenerator;
 use App\Models\Certificado;
-use App\Models\Detalle;
 use App\Models\Empresa;
-use App\Models\Cuota;
 use App\Models\Sucursal;
 use App\Models\Venta;
+use App\Models\VentaDetalle;
 use DateTime;
 use Illuminate\Http\Request;
 
@@ -25,20 +24,14 @@ class VentaController extends Controller
         $certificado = new Certificado($request->certificado);
 
         $detalles = [];
-        foreach ($request->detalle as $detalleData) {
-            $detalle = new Detalle($detalleData);
+        foreach ($request->detalles as $detalleData) {
+            $detalle = new VentaDetalle($detalleData);
             $detalles[] = $detalle;
         }
 
-        $cuotas = [];
-        foreach ($request->cuotas as $cuota) {
-            $cuota = new Cuota($cuota);
-            $cuotas[] = $cuota;
-        }
+        $xml = XmlGenerator::createInvoiceXml($venta, $detalles, $empresa, $sucursal);
 
-        $xml = XmlGenerator::createInvoiceXml($venta, $detalles, $cuotas, $empresa, $sucursal);
-
-        $fileName = $empresa->documento . '-' . $venta->codigoVenta . '-' . $venta->serie . '-' . $venta->numeracion;
+        $fileName = $empresa->documento . '-' . $venta->codigoComprobante . '-' . $venta->serie . '-' . $venta->numeracion;
 
         return SunatHelper::sendBill($fileName, $xml, $empresa, $certificado);
     }
@@ -55,12 +48,12 @@ class VentaController extends Controller
         $fileName = $empresa->documento . '-RC-' . $currentDate->format('Ymd') . '-' . $correlativoActual;
 
         if ($venta->ticketConsultaSunat != '') {
-            return SunatHelper::getStatus($venta, $empresa, $fileName);
+            return SunatHelper::getStatus($venta->ticketConsultaSunat, $empresa, $fileName);
         }
 
         $detalles = [];
-        foreach ($request->detalle as $detalleData) {
-            $detalle = new Detalle($detalleData);
+        foreach ($request->detalles as $detalleData) {
+            $detalle = new VentaDetalle($detalleData);
             $detalles[] = $detalle;
         }
 
@@ -85,12 +78,12 @@ class VentaController extends Controller
         $fileName = $empresa->documento . '-RA-' . $currentDate->format('Ymd') . '-' . $correlativoActual;
 
         if ($venta->ticketConsultaSunat != '') {
-            return SunatHelper::getStatus($venta, $empresa, $fileName);
+            return SunatHelper::getStatus($venta->ticketConsultaSunat, $empresa, $fileName);
         }
 
         $correlativo = ($correlativoActual === 0) ? (intval($correlativoActual) + 1) : ($correlativoActual + 1);
 
-        $xml = XmlGenerator::generateVoidedDocumentsXml($venta, $empresa, $correlativo, $currentDate);
+        $xml = XmlGenerator::createVoidedDocumentsXml($venta, $empresa, $correlativo, $currentDate);
 
         $fileName = $empresa->documento . '-RA-' . $currentDate->format('Ymd') . '-' . $correlativo;
 
