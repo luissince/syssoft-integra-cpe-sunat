@@ -216,12 +216,6 @@ class SunatHelper
             $fileNameXml
         );
 
-        error_log(json_encode([
-            'path' => $path,
-            'fileName' => $fileName,
-            'fileNameXml' => $fileNameXml,
-        ]));
-
         $soapResult = new SoapResult('', $fileName);
         $soapResult->setConfigGuiaRemision(Storage::path($path  . $fileName . '.zip'));
         $soapResult->sendDespatchAdvice(

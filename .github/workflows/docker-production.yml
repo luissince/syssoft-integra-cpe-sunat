@@ -1,4 +1,4 @@
-name: Docker Image CI - SysSoftIntegra Cpe-Sunat
+name: Docker Image CI - SysSoftIntegra Cpe-Sunat Production
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - "master"
 
 jobs:
-  build-and-deploy-app-test:
+  build-and-deploy-app:
     runs-on: self-hosted
 
     env:  
