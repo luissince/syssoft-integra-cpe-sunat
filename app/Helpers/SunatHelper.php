@@ -216,9 +216,15 @@ class SunatHelper
             $fileNameXml
         );
 
+        error_log(json_encode([
+            'path' => $path,
+            'fileName' => $fileName,
+            'fileNameXml' => $fileNameXml,
+        ]));
+
         $soapResult = new SoapResult('', $fileName);
         $soapResult->setConfigGuiaRemision(Storage::path($path  . $fileName . '.zip'));
-        $soapResult->sendGuiaRemision(
+        $soapResult->sendDespatchAdvice(
             [
                 "NumeroDocumento" => $empresa->documento,
                 "UsuarioSol" => $empresa->usuarioSolSunat,
@@ -284,7 +290,7 @@ class SunatHelper
 
         $soapResult = new SoapResult('', $fileName);
         $soapResult->setTicket($ticket);
-        $soapResult->sendGuiaRemision(
+        $soapResult->sendDespatchAdvice(
             [
                 "NumeroDocumento" => $empresa->documento,
                 "UsuarioSol" => $empresa->usuarioSolSunat,

@@ -2,6 +2,7 @@
 
 namespace App\Src;
 
+use App\Exceptions\ResponseCurlException;
 use Exception;
 use SoapFault;
 use DOMDocument;
@@ -9,6 +10,8 @@ use App\Src\Sunat;
 use App\Src\SoapBuilder;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
+
 
 class SoapResult
 {
@@ -491,20 +494,20 @@ class SoapResult
         }
     }
 
-    public function sendGuiaRemision(array $credenciales, array $uri, bool $tipoEnvio, string $path)
+    public function sendDespatchAdvice(array $credenciales, array $uri, bool $tipoEnvio, string $path)
     {
         try {
             $accessToken = $this->getTokenApiSunat($credenciales, $tipoEnvio);
 
             if ($this->ticket) {
-                $this->sendGetStatusGuiaRemision($accessToken, $tipoEnvio, $path);
+                $this->getStatusDespatchArchive($accessToken, $tipoEnvio, $path);
             } else {
-                $this->sendApiSunatGuiaRemision($accessToken, implode("-", $uri), $tipoEnvio, $path);
+                $this->sendDocumentDespatchAdvice($accessToken, implode("-", $uri), $tipoEnvio, $path);
             }
         } catch (ResponseCurlException $ex) {
             $this->setSuccess(false);
-            $this->setCode($ex->getCodigo());
-            $this->setMessage($ex->getMensaje());
+            $this->setCode($ex->getCode());
+            $this->setMessage($ex->getMessage());
         } catch (Exception $ex) {
             $this->setSuccess(false);
             $this->setError(true);
@@ -522,355 +525,466 @@ class SoapResult
 
     private function getTokenApiSunat(array $credenciales, bool $tipoEnvio)
     {
-        $headers = array(
-            'Content-Type: application/x-www-form-urlencoded'
-        );
 
-        $data = array(
-            'grant_type' => 'password',
-            'scope' => urlencode('https://api-cpe.sunat.gob.pe'),
-            'client_id' => urlencode($credenciales["IdApiSunat"]),
-            'client_secret' => urlencode($credenciales["ClaveApiSunat"]),
-            'username' => $credenciales["NumeroDocumento"] . "" . $credenciales["UsuarioSol"],
-            'password' => $credenciales["ClaveSol"],
-        );
+        /*
+        |--------------------------------------------------------------------------
+        | URL
+        |--------------------------------------------------------------------------
+        */
+        $url = $tipoEnvio === false
+            ? 'https://gre-test.nubefact.com/v1/clientessol/' . $credenciales["IdApiSunat"] . '/oauth2/token'
+            : 'https://api-seguridad.sunat.gob.pe/v1/clientessol/' . $credenciales["IdApiSunat"] . '/oauth2/token';
 
-        $fields = "";
-        $index = 0;
-        foreach ($data as $key => $val) {
-            $index++;
-            $fields .= $index == count($data) ? $key . "=" . $val : $key . "=" . $val . "&";
+
+        /*
+        |--------------------------------------------------------------------------
+        | REQUEST
+        |--------------------------------------------------------------------------
+        */
+        $response = Http::asForm()
+            ->post($url, [
+                'grant_type' => 'password',
+                'scope' => 'https://api-cpe.sunat.gob.pe',
+                'client_id' => trim($credenciales["IdApiSunat"]),
+                'client_secret' => trim($credenciales["ClaveApiSunat"]),
+                'username' => trim($credenciales["NumeroDocumento"]) . trim($credenciales["UsuarioSol"]),
+                'password' => $credenciales["ClaveSol"],
+            ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | BODY VACÍO
+        |--------------------------------------------------------------------------
+        */
+        if (!$response->body()) {
+
+            throw new Exception(
+                'Respuesta vacía'
+            );
         }
 
-        $curl = curl_init();
-        if ($tipoEnvio === false) {
-            curl_setopt($curl, CURLOPT_URL, 'https://gre-test.nubefact.com/v1/clientessol/' . $credenciales["IdApiSunat"] . '/oauth2/token');
-        } else {
-            curl_setopt($curl, CURLOPT_URL, 'https://api-seguridad.sunat.gob.pe/v1/clientessol/' . $credenciales["IdApiSunat"] . '/oauth2/token/');
+        /*
+        |--------------------------------------------------------------------------
+        | JSON
+        |--------------------------------------------------------------------------
+        */
+        $result = $response->json();
+
+        /*
+        |--------------------------------------------------------------------------
+        | JSON INVÁLIDO
+        |--------------------------------------------------------------------------
+        */
+        if (!is_array($result)) {
+
+            throw new Exception(
+                'JSON inválido'
+            );
         }
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_ENCODING, '');
-        curl_setopt($curl, CURLOPT_MAXREDIRS, 10);
-        curl_setopt($curl, CURLOPT_TIMEOUT, 0);
-        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
 
-        curl_setopt($curl, CURLOPT_POSTFIELDS, $fields);
-        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
-        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+        /*
+        |--------------------------------------------------------------------------
+        | ERROR HTTP
+        |--------------------------------------------------------------------------
+        */
+        if ($response->failed()) {
 
-        $response = curl_exec($curl);
+            throw new ResponseCurlException(
+                (string)($result['cod'] ?? '0'),
+                (string)($result['msg'] ?? 'Error desconocido')
+            );
+        }
 
-        $http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        curl_close($curl);
+        /*
+        |--------------------------------------------------------------------------
+        | PROCESO DE RESPUESTA INVALIDO
+        |--------------------------------------------------------------------------
+        */
+        if (
+            isset($result['cod']) ||
+            isset($result['msg'])
+        ) {
 
-        if ($http_code == 200) {
-            $result = (object)json_decode($response);
-            return $result->access_token;
-        } else {
-            if ($response) {
-                $result = (object)json_decode($response);
+            throw new ResponseCurlException(
+                (string)($result['cod'] ?? '0'),
+                (string)($result['msg'] ?? 'Error desconocido')
+            );
+        }
 
-                $codigo = isset($result->cod) ? $result->cod : '';
-                $mensaje = isset($result->msg) ? $result->msg : '';
-                throw new ResponseCurlException($codigo, $mensaje, $http_code, null);
-            } else {
-                throw new Exception("Error desconocido al intentar obtener el token de acceso.");
-            }
+        /*
+        |--------------------------------------------------------------------------
+        | RESPUESTA EXITOSA
+        |--------------------------------------------------------------------------
+        */
+        if (isset($result['access_token'])) {
+
+            return $result['access_token'];
         }
     }
 
-    private function sendApiSunatGuiaRemision(string $token, string $uri, $tipoEnvio, string $path)
+    private function sendDocumentDespatchAdvice(string $token, string $uri, bool $tipoEnvio, string $path)
     {
-        $headers = array(
-            'Content-Type: application/json',
-            'Authorization: Bearer ' . $token . ''
-        );
 
-        $data = array(
-            'archivo' => array(
-                'nomArchivo' => '' . $this->filename . '.zip',
+        /*
+        |--------------------------------------------------------------------------
+        | URL
+        |--------------------------------------------------------------------------
+        */
+        $url = $tipoEnvio === false
+            ? 'https://gre-test.nubefact.com/v1/contribuyente/gem/comprobantes/' . $uri
+            : 'https://api-cpe.sunat.gob.pe/v1/contribuyente/gem/comprobantes/' . $uri;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | BODY
+        |--------------------------------------------------------------------------
+        */
+        $data = [
+            'archivo' => [
+                'nomArchivo' => $this->filename . '.zip',
                 'arcGreZip' => $this->filebase64,
                 'hashZip' => $this->hashZip,
-            )
+            ]
+        ];
+
+        /*
+        |--------------------------------------------------------------------------
+        | REQUEST
+        |--------------------------------------------------------------------------
+        */
+        $response = Http::withToken($token)
+            ->acceptJson()
+            ->post($url, $data);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | BODY VACÍO
+        |--------------------------------------------------------------------------
+        */
+        if (!$response->body()) {
+
+            throw new Exception(
+                "Respuesta vacía SUNAT"
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | JSON
+        |--------------------------------------------------------------------------
+        */
+        $result = $response->json();
+
+        if (!is_array($result)) {
+
+            throw new Exception(
+                "JSON inválido SUNAT"
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | ERROR HTTP
+        |--------------------------------------------------------------------------
+        */
+        if ($response->failed()) {
+
+            throw new ResponseCurlException(
+                (string)($result['cod'] ?? $response->status()),
+                (string)($result['msg'] ?? 'Error HTTP'),
+                $response->status()
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDAR TICKET
+        |--------------------------------------------------------------------------
+        */
+        if (!isset($result['numTicket'])) {
+
+            throw new Exception(
+                "SUNAT no devolvió numTicket"
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | SUCCESS
+        |--------------------------------------------------------------------------
+        */
+        $this->setTicket($result['numTicket']);
+        $this->setAccepted(true);
+        $this->setCode("");
+        $this->setMessage(
+            "La Guía de remisión se envió correctamente, estado en proceso. Verifique nuevamente en unos minutos."
         );
-
-        $data_string = json_encode($data);
-
-        $curl = curl_init();
-        if ($tipoEnvio === false) {
-            curl_setopt($curl, CURLOPT_URL, 'https://gre-test.nubefact.com/v1/contribuyente/gem/comprobantes/' . $uri . '');
-        } else {
-            curl_setopt($curl, CURLOPT_URL, 'https://api-cpe.sunat.gob.pe/v1/contribuyente/gem/comprobantes/' . $uri . '');
-        }
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_ENCODING, '');
-        curl_setopt($curl, CURLOPT_MAXREDIRS, 10);
-        curl_setopt($curl, CURLOPT_TIMEOUT, 0);
-        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
-
-        curl_setopt($curl, CURLOPT_POSTFIELDS, $data_string);
-        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
-        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
-
-        $response = curl_exec($curl);
-
-        $http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        curl_close($curl);
-
-        if ($http_code == 200) {
-            $result = (object)json_decode($response);
-            $this->setTicket($result->numTicket);
-            $this->setAccepted(true);
-            $this->setCode("");
-            $this->setMessage("La Guía de remisión se envío correctamente, estado en proceso verique en un par de minutos.");
-            $this->setSuccess(true);
-        } else {
-            if ($response) {
-                if (file_exists(Storage::path($path . $this->filename . '.xml'))) {
-                    unlink(Storage::path($path . $this->filename . '.xml'));
-                }
-                if (file_exists(Storage::path($path . $this->filename . '.zip'))) {
-                    unlink(Storage::path($path . $this->filename . '.zip'));
-                }
-
-                $result = (object)json_decode($response);
-
-                $codigo =  $result->cod ?? '';
-                $mensaje = $result->exc ?? $result->msg;
-
-                throw new ResponseCurlException($codigo, $mensaje, $http_code, null);
-            } else {
-                if (file_exists(Storage::path($path . $this->filename . '.xml'))) {
-                    unlink(Storage::path($path . $this->filename . '.xml'));
-                }
-                if (file_exists(Storage::path($path . $this->filename . '.zip'))) {
-                    unlink(Storage::path($path . $this->filename . '.zip'));
-                }
-                throw new Exception("Se presento una condicion inesperada que impidio completar el Request");
-            }
-        }
+        $this->setSuccess(true);
     }
 
-    private function sendGetStatusGuiaRemision(string $token, bool $tipoEnvio, string $path)
+    private function getStatusDespatchArchive(string $token, bool $tipoEnvio, string $path)
     {
-        try {
-            $headers = array(
-                'Content-Type: application/json',
-                'Authorization: Bearer ' . $token . ''
+
+        /*
+    |--------------------------------------------------------------------------
+    | URL
+    |--------------------------------------------------------------------------
+    */
+        $url = $tipoEnvio === false
+            ? 'https://gre-test.nubefact.com/v1/contribuyente/gem/comprobantes/envios/' . $this->ticket
+            : 'https://api-cpe.sunat.gob.pe/v1/contribuyente/gem/comprobantes/envios/' . $this->ticket;
+
+        /*
+        |--------------------------------------------------------------------------
+        | REQUEST
+        |--------------------------------------------------------------------------
+        */
+        $response = Http::withToken($token)
+            ->acceptJson()
+            ->get($url);
+
+        /*
+        |--------------------------------------------------------------------------
+        | BODY VACÍO
+        |--------------------------------------------------------------------------
+        */
+        if (!$response->body()) {
+
+            throw new Exception(
+                'Respuesta vacía'
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | JSON
+        |--------------------------------------------------------------------------
+        */
+        $result = $response->json();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | JSON INVÁLIDO
+        |--------------------------------------------------------------------------
+        */
+        if (!is_array($result)) {
+
+            throw new Exception(
+                'JSON inválido'
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | JSON
+        |--------------------------------------------------------------------------
+        */
+        $result = $response->json();
+
+        if (!is_array($result)) {
+
+            throw new Exception(
+                "JSON inválido"
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | ERROR HTTP
+        |--------------------------------------------------------------------------
+        */
+        if ($response->failed()) {
+
+            throw new ResponseCurlException(
+                (string)($result['cod'] ?? '0'),
+                (string)($result['msg'] ?? 'Error desconocido')
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDAR codRespuesta
+        |--------------------------------------------------------------------------
+        */
+        if (!isset($result['codRespuesta'])) {
+
+            throw new Exception(
+                "SUNAT no devolvió codRespuesta"
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | EN PROCESO
+        |--------------------------------------------------------------------------
+        */
+        if ($result['codRespuesta'] === "98") {
+
+            $this->setAccepted(true);
+            $this->setSuccess(false);
+            $this->setCode($result['codRespuesta']);
+            $this->setMessage(
+                "El proceso de envío, consulte nuevamente en unos minutos."
             );
 
-            $curl = curl_init();
-            if ($tipoEnvio === false) {
-                curl_setopt($curl, CURLOPT_URL, 'https://gre-test.nubefact.com/v1/contribuyente/gem/comprobantes/envios/' .  $this->ticket . '');
-            } else {
-                curl_setopt($curl, CURLOPT_URL, 'https://api-cpe.sunat.gob.pe/v1/contribuyente/gem/comprobantes/envios/' .  $this->ticket . '');
-            }
-            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($curl, CURLOPT_ENCODING, '');
-            curl_setopt($curl, CURLOPT_MAXREDIRS, 10);
-            curl_setopt($curl, CURLOPT_TIMEOUT, 0);
-            curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
-            curl_setopt($curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
-
-            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "GET");
-            curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
-
-            $response = curl_exec($curl);
-
-            $http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-            curl_close($curl);
-
-            if ($http_code == 200) {
-                $result = (object)json_decode($response);
-                if ($result->codRespuesta == "0") {
-                    $cdr = base64_decode($result->arcCdr);
-
-                    // $archivo = fopen('../files/R-' . $this->filename . '.zip', 'w+');
-                    $archivo = fopen(Storage::path($path . "R-" . $this->filename . '.zip'), 'w+');
-                    fputs($archivo, $cdr);
-                    fclose($archivo);
-                    // chmod('../files/R-' . $this->filename . '.zip', 0777);
-
-                    // $isExtract = Sunat::extractZip('../files/R-' . $this->filename . '.zip', '../files/');
-                    $isExtract = Sunat::extractZip(
-                        Storage::path($path . "R-" . $this->filename . '.zip'),
-                        Storage::path($path)
-                    );
-
-                    if (!$isExtract) {
-                        throw new Exception("No se pudo extraer el contenido del archivo zip.");
-                    }
-
-                    // $xml = file_get_contents('../files/R-' . $this->filename . '.xml');
-                    $xml = Storage::get($path . 'R-' . $this->filename . '.xml');
-                    $DOM = new DOMDocument('1.0', 'utf-8');
-                    $DOM->preserveWhiteSpace = FALSE;
-                    $DOM->loadXML($xml);
-
-                    $DocXML = $DOM->getElementsByTagName('ResponseCode');
-                    $code = "";
-                    foreach ($DocXML as $Nodo) {
-                        $code = $Nodo->nodeValue;
-                    }
-
-                    $DocXML = $DOM->getElementsByTagName('Description');
-                    $description = "";
-                    foreach ($DocXML as $Nodo) {
-                        $description = $Nodo->nodeValue;
-                    }
-
-                    $DocXML = $DOM->getElementsByTagName('DocumentDescription');
-                    $hashCode = "";
-                    foreach ($DocXML as $Nodo) {
-                        $hashCode = $Nodo->nodeValue;
-                    }
-                    // if (file_exists('../files/' . $this->filename . '.zip')) {
-                    //     unlink('../files/' . $this->filename . '.zip');
-                    // }
-                    // if (file_exists('../files/R-' . $this->filename . '.zip')) {
-                    //     unlink('../files/R-' . $this->filename . '.zip');
-                    // }
-
-                    if (file_exists(Storage::path($path . $this->filename . '.zip'))) {
-                        unlink(Storage::path($path . $this->filename . '.zip'));
-                    }
-                    if (file_exists(Storage::path($path . "R-" . $this->filename . '.zip'))) {
-                        unlink(Storage::path($path . "R-" . $this->filename . '.zip'));
-                    }
-
-                    $this->setAccepted(true);
-                    $this->setCode($code);
-                    $this->setMessage($description);
-                    $this->setHashCode($hashCode);
-                    $this->setSuccess(true);
-                } else if ($result->codRespuesta == "98") {
-                    // if (file_exists('../files/' . $this->filename . '.xml')) {
-                    //     unlink('../files/' . $this->filename . '.xml');
-                    // }
-                    // if (file_exists('../files/' . $this->filename . '.zip')) {
-                    //     unlink('../files/' . $this->filename . '.zip');
-                    // }
-
-                    if (file_exists(Storage::path($path . $this->filename . '.xml'))) {
-                        unlink(Storage::path($path . $this->filename . '.xml'));
-                    }
-                    if (file_exists(Storage::path($path . $this->filename . '.zip'))) {
-                        unlink(Storage::path($path . $this->filename . '.zip'));
-                    }
-
-                    // $logFile = fopen("log.txt", 'a') or die("Error creando archivo");
-                    // fwrite($logFile, "\n" . date("d/m/Y H:i:s") . "N° TICKET: " . $this->ticket . "\r\n") or die("Error escribiendo en el archivo");
-                    // fclose($logFile);
-
-                    // $logFile = fopen("log.txt", 'a') or die("Error creando archivo");
-                    // fwrite($logFile, "\n" . date("d/m/Y H:i:s") . $response . "\r\n") or die("Error escribiendo en el archivo");
-                    // fclose($logFile);
-
-                    $this->setAccepted(true);
-                    $this->setCode($result->codRespuesta);
-                    $this->setMessage("El proceso de envío, consulte en un par de minutos nuevamente.");
-                    $this->setSuccess(false);
-                } else if ($result->codRespuesta == "99") {
-                    // if (file_exists('../files/' . $this->filename . '.xml')) {
-                    //     unlink('../files/' . $this->filename . '.xml');
-                    // }
-                    // if (file_exists('../files/' . $this->filename . '.zip')) {
-                    //     unlink('../files/' . $this->filename . '.zip');
-                    // }
-
-                    if (file_exists(Storage::path($path . $this->filename . '.xml'))) {
-                        unlink(Storage::path($path . $this->filename . '.xml'));
-                    }
-                    if (file_exists(Storage::path($path . $this->filename . '.zip'))) {
-                        unlink(Storage::path($path . $this->filename . '.zip'));
-                    }
-
-                    $code = $result->codRespuesta;
-                    $message = "";
-                    if (isset($result->error)) {
-                        $code = $result->error->numError;
-                        $message = $result->error->desError;
-                    } else {
-                        $message = "Se genero un problema, comuníquese con su proveedor del software.";
-                    }
-
-                    throw new Exception($message, $code);
-                } else {
-                    // if (file_exists('../files/' . $this->filename . '.xml')) {
-                    //     unlink('../files/' . $this->filename . '.xml');
-                    // }
-                    // if (file_exists('../files/' . $this->filename . '.zip')) {
-                    //     unlink('../files/' . $this->filename . '.zip');
-                    // }
-
-                    if (file_exists(Storage::path($path . $this->filename . '.xml'))) {
-                        unlink(Storage::path($path . $this->filename . '.xml'));
-                    }
-                    if (file_exists(Storage::path($path . $this->filename . '.zip'))) {
-                        unlink(Storage::path($path . $this->filename . '.zip'));
-                    }
-
-                    throw new Exception("Se genero un problema, comuníquese con su proveedor del software.", $result->codRespuesta);
-                }
-            } else {
-                if ($response) {
-                    // if (file_exists('../files/' . $this->filename . '.xml')) {
-                    //     unlink('../files/' . $this->filename . '.xml');
-                    // }
-                    // if (file_exists('../files/' . $this->filename . '.zip')) {
-                    //     unlink('../files/' . $this->filename . '.zip');
-                    // }
-
-                    if (file_exists(Storage::path($path . $this->filename . '.xml'))) {
-                        unlink(Storage::path($path . $this->filename . '.xml'));
-                    }
-                    if (file_exists(Storage::path($path . $this->filename . '.zip'))) {
-                        unlink(Storage::path($path . $this->filename . '.zip'));
-                    }
-
-                    $result = (object)json_decode($response);
-
-                    $codigo =  $result->cod ?? '';
-                    $mensaje = $result->msg ?? '';
-                    throw new ResponseCurlException($codigo, $mensaje, $http_code, null);
-                } else {
-                    // if (file_exists('../files/' . $this->filename . '.xml')) {
-                    //     unlink('../files/' . $this->filename . '.xml');
-                    // }
-                    // if (file_exists('../files/' . $this->filename . '.zip')) {
-                    //     unlink('../files/' . $this->filename . '.zip');
-                    // }
-
-                    if (file_exists(Storage::path($path . $this->filename . '.xml'))) {
-                        unlink(Storage::path($path . $this->filename . '.xml'));
-                    }
-                    if (file_exists(Storage::path($path . $this->filename . '.zip'))) {
-                        unlink(Storage::path($path . $this->filename . '.zip'));
-                    }
-
-                    throw new Exception("Se presento una condicion inesperada que impidio completar el
-                    Request", -1);
-                }
-            }
-        } catch (Exception $ex) {
-            // if (file_exists('../files/' . $this->filename . '.xml')) {
-            //     unlink('../files/' . $this->filename . '.xml');
-            // }
-            // if (file_exists('../files/' . $this->filename . '.zip')) {
-            //     unlink('../files/' . $this->filename . '.zip');
-            // }
-
-            if (file_exists(Storage::path($path . $this->filename . '.xml'))) {
-                unlink(Storage::path($path . $this->filename . '.xml'));
-            }
-            if (file_exists(Storage::path($path . $this->filename . '.zip'))) {
-                unlink(Storage::path($path . $this->filename . '.zip'));
-            }
-
-            throw new Exception($ex->getMessage(), $ex->getCode());
+            return;
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | ERROR FUNCIONAL
+        |--------------------------------------------------------------------------
+        */
+        if ($result['codRespuesta'] === "99") {
+
+            throw new ResponseCurlException(
+                (string)($result['error']['numError'] ?? ''),
+                (string)($result['error']['desError'] ?? 'Error SUNAT'),
+                $response->status()
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | ÉXITO
+        |--------------------------------------------------------------------------
+        */
+        if ($result['codRespuesta'] === "0") {
+
+            $cdr = base64_decode($result['arcCdr']);
+
+            /*
+            |--------------------------------------------------------------------------
+            | ZIP
+            |--------------------------------------------------------------------------
+            */
+            Storage::put(
+                $path . "R-" . $this->filename . '.zip',
+                $cdr
+            );
+
+            /*
+            |--------------------------------------------------------------------------
+            | EXTRAER ZIP
+            |--------------------------------------------------------------------------
+            */
+            $isExtract = Sunat::extractZip(
+                Storage::path($path . "R-" . $this->filename . '.zip'),
+                Storage::path($path)
+            );
+
+            if (!$isExtract) {
+
+                throw new Exception(
+                    "No se pudo extraer el archivo zip."
+                );
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | XML
+            |--------------------------------------------------------------------------
+            */
+            $xml = Storage::get(
+                $path . 'R-' . $this->filename . '.xml'
+            );
+
+            $DOM = new DOMDocument('1.0', 'utf-8');
+            $DOM->preserveWhiteSpace = false;
+            $DOM->loadXML($xml);
+
+            /*
+            |--------------------------------------------------------------------------
+            | RESPONSE CODE
+            |--------------------------------------------------------------------------
+            */
+            $code = '';
+
+            foreach (
+                $DOM->getElementsByTagName('ResponseCode')
+                as $node
+            ) {
+                $code = $node->nodeValue;
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | DESCRIPTION
+            |--------------------------------------------------------------------------
+            */
+            $description = '';
+
+            foreach (
+                $DOM->getElementsByTagName('Description')
+                as $node
+            ) {
+                $description = $node->nodeValue;
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | HASH
+            |--------------------------------------------------------------------------
+            */
+            $hashCode = '';
+
+            foreach (
+                $DOM->getElementsByTagName('DocumentDescription')
+                as $node
+            ) {
+                $hashCode = $node->nodeValue;
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | ELIMINAR ZIPS
+            |--------------------------------------------------------------------------
+            */
+            if (
+                file_exists(
+                    Storage::path($path . $this->filename . '.zip')
+                )
+            ) {
+                unlink(
+                    Storage::path($path . $this->filename . '.zip')
+                );
+            }
+
+            if (
+                file_exists(
+                    Storage::path($path . "R-" . $this->filename . '.zip')
+                )
+            ) {
+                unlink(
+                    Storage::path($path . "R-" . $this->filename . '.zip')
+                );
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | SUCCESS
+            |--------------------------------------------------------------------------
+            */
+            $this->setAccepted(true);
+            $this->setSuccess(true);
+            $this->setCode($code);
+            $this->setMessage($description);
+            $this->setHashCode($hashCode);
+
+            return;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | RESPUESTA DESCONOCIDA
+        |--------------------------------------------------------------------------
+        */
+        throw new Exception(
+            "Respuesta inesperada SUNAT"
+        );
     }
 
     public function setConfigGuiaRemision(string $filezip)
