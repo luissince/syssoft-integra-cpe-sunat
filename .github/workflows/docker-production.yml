@@ -26,4 +26,4 @@ jobs:
           sed -i "s~APP_ENV=.*~APP_ENV=${APP_ENV}~" .env
 
       - name: Creando y ejecutando contenedor
-        run: docker compose -f docker-compose.yml up --build cpe-sunat-services -d
+        run: docker compose -f docker-compose.yml up --build -d
