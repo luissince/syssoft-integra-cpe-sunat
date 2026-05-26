@@ -1,0 +1,9 @@
+services:
+  # Servicio CEP Sunat API
+  app:
+    # Construcción de la imagen a partir del Dockerfile
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    # Nombre de la imagen para la construcción
+    image: cpe-sunat
