@@ -20,15 +20,6 @@
                 <soap11:body use="literal" />
             </wsdl:output>
         </wsdl:operation>
-        <wsdl:operation name="getStatusAR">
-            <soap11:operation soapAction="urn:getStatusAR" style="document" />
-            <wsdl:input name="getStatusARRequest">
-                <soap11:body use="literal" />
-            </wsdl:input>
-            <wsdl:output name="getStatusARResponse">
-                <soap11:body use="literal" />
-            </wsdl:output>
-        </wsdl:operation>
         <wsdl:operation name="sendBill">
             <soap11:operation soapAction="urn:sendBill" style="document" />
             <wsdl:input name="sendBillRequest">
@@ -59,6 +50,10 @@
     </wsdl:binding>
     <wsdl:service name="billService">
         <wsdl:port name="BillServicePort" binding="ns0:BillServicePortBinding">
+            <soap11:address
+                location="https://e-beta.sunat.gob.pe:443/ol-ti-itcpfegem-beta/billService" />
+        </wsdl:port>
+        <wsdl:port name="BillServicePort.1" binding="ns0:BillServicePortBinding">
             <soap11:address
                 location="https://e-beta.sunat.gob.pe:443/ol-ti-itcpfegem-beta/billService" />
         </wsdl:port>

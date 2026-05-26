@@ -17,17 +17,9 @@
         <wsdl:part xmlns:xsns="http://service.sunat.gob.pe" name="parameters"
             element="xsns:getStatus" />
     </wsdl:message>
-    <wsdl:message name="getStatusAR">
-        <wsdl:part xmlns:xsns="http://service.sunat.gob.pe" name="parameters"
-            element="xsns:getStatusAR" />
-    </wsdl:message>
     <wsdl:message name="getStatusResponse">
         <wsdl:part xmlns:xsns="http://service.sunat.gob.pe" name="parameters"
             element="xsns:getStatusResponse" />
-    </wsdl:message>
-    <wsdl:message name="getStatusResponseAR">
-        <wsdl:part xmlns:xsns="http://service.sunat.gob.pe" name="parameters"
-            element="xsns:getStatusResponseAR" />
     </wsdl:message>
     <wsdl:message name="sendBill">
         <wsdl:part xmlns:xsns="http://service.sunat.gob.pe" name="parameters"
@@ -57,10 +49,6 @@
         <wsdl:operation name="getStatus">
             <wsdl:input name="getStatusRequest" message="ns1:getStatus" />
             <wsdl:output name="getStatusResponse" message="ns1:getStatusResponse" />
-        </wsdl:operation>
-        <wsdl:operation name="getStatusAR">
-            <wsdl:input name="getStatusARRequest" message="ns1:getStatusAR" />
-            <wsdl:output name="getStatusARResponse" message="ns1:getStatusResponseAR" />
         </wsdl:operation>
         <wsdl:operation name="sendBill">
             <wsdl:input name="sendBillRequest" message="ns1:sendBill" />

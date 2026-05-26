@@ -80,7 +80,7 @@ class EmpresaController extends Controller
 
             DB::rollBack();
 
-            return response($ex->getMessage(),500);
+            return response($ex->getMessage(), 500);
         }
     }
 
@@ -119,9 +119,10 @@ class EmpresaController extends Controller
         } else {
             return response()->json(["message" => $soapResult->getMessage()], 500);
         }
-    }   
+    }
 
-    public function getCdr(Request $request) {
+    public function getCdr(Request $request)
+    {
         $consulta = new Consulta($request);
 
         $arguments = [
@@ -158,5 +159,4 @@ class EmpresaController extends Controller
             return response()->json(["message" => $soapResult->getMessage()], 500);
         }
     }
-
 }

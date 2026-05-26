@@ -1,46 +1,45 @@
-FROM ubuntu:20.04
+FROM php:7.4-fpm
 
-ENV DEBIAN_FRONTEND noninteractive
-ENV TZ=UTC
+RUN apt-get update && apt-get install -y \
+    nginx \
+    unzip \
+    git \
+    curl \
+    libzip-dev \
+    libpng-dev \
+    libxml2-dev \
+    libicu-dev \
+    libonig-dev \
+    librabbitmq-dev \
+    && docker-php-ext-install \
+        pdo \
+        pdo_mysql \
+        mbstring \
+        intl \
+        zip \
+        bcmath \
+        soap \
+        sockets \
+    && pecl install amqp \
+    && docker-php-ext-enable amqp
 
-# Install necessary dependencies
-RUN apt update -y \
-    && apt install -y vim software-properties-common \
-    && add-apt-repository ppa:ondrej/php \
-    && apt install -y php7.4-fpm php7.4-common php7.4-dom php7.4-intl php7.4-mysql php7.4-xml php7.4-xmlrpc php7.4-curl php7.4-gd php7.4-imagick php7.4-cli php7.4-dev php7.4-imap php7.4-mbstring php7.4-soap php7.4-zip php7.4-bcmath php7.4-pdo nginx unzip \
-    && rm /etc/nginx/sites-available/*
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-COPY default /etc/nginx/sites-available/
+RUN rm -rf /etc/nginx/sites-available \
+ && rm -rf /etc/nginx/sites-enabled
+COPY ./docker/default.conf /etc/nginx/conf.d/default.conf
 
-# Download and install composer
-RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-RUN php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+WORKDIR /var/www/html
 
-# Clean temporary
-RUN php -r "unlink('composer-setup.php');"
+COPY . .
 
-COPY . /var/www/html/
+RUN composer install --no-dev --optimize-autoloader
 
-WORKDIR /var/www/html/
-
-RUN composer install --optimize-autoloader --no-dev \
-    && php artisan key:generate \
-    && php artisan config:cache \
-    && chmod -R 777 /var/www/html
-
-# Install supervisord
-RUN apt install -y supervisor
-
-# Copiar el archivo de configuración de supervisord
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
-# Verificar si el directorio ya existe antes de crearlo
-RUN [ ! -d "storage/app/files" ] && mkdir -p storage/app/files
-
-# Establecer los permisos adecuados para la carpeta de archivos
-RUN chmod -R 777 storage/app/files
+RUN mkdir -p storage/app/files \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
 
 EXPOSE 80
 
-CMD ["/usr/bin/supervisord"]
-
+# CMD ["sh", "-c", "php-fpm -D && nginx -g 'daemon off;'"]
+CMD php-fpm -D && nginx -g 'daemon off;'

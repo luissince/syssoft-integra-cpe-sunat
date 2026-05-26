@@ -1,35 +1,26 @@
-# Versión de la configuración de Docker Compose
-version: '3'
-
-# Definición de servicios
 services:
-  # Servicio para la aplicación principal
-  cpe-sunat-services:
-    # Configuración para construir la imagen del contenedor
-    build:
+  # Servicio CEP Sunat API
+  cpe-sunat-principal:
+    # Construcción de la imagen a partir del Dockerfile
+    build: 
       context: .
       dockerfile: Dockerfile
-    # Nombre de la imagen resultante
-    image: cpe-sunat-image
-    # Conexión a la red llamada 'luis'
+    image: cpe-sunat-principal-image
+    # Red
     networks:
-      - luis
-    # Mapeo de puertos: Mapea el puerto 6003 del host al puerto 80 del contenedor
-    ports:
-      - 6003:80
-    # Nombre del contenedor
-    container_name: cpe-sunat-principal
-    # Configuración para reiniciar siempre el contenedor
-    restart: always
+    - luis
+    # Volumen
     volumes:
       - cpe-sunat-volumen:/var/www/html/storage/app/files
+    # Nombre del contenedor
+    restart: always
+    container_name: cpe-sunat-principal
 
-# Definición de redes
+# Red compartida entre servicios
 networks:
-  # Definición de la red llamada 'luis'
   luis:
-    # Especifica que la red es externa (puede haber sido creada fuera de este archivo)
     external: true
 
+# Volúmenes (persistencia)
 volumes:
   cpe-sunat-volumen:

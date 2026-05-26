@@ -2,8 +2,6 @@
 	version="1.0" targetNamespace="http://service.sunat.gob.pe">
 	<xs:element name="getStatus" type="tns:getStatus" />
 	<xs:element name="getStatusResponse" type="tns:getStatusResponse" />
-	<xs:element name="getStatusAR" type="tns:getStatusAR" />
-	<xs:element name="getStatusResponseAR" type="tns:getStatusResponseAR" />
 	<xs:element name="sendBill" type="tns:sendBill" />
 	<xs:element name="sendBillResponse" type="tns:sendBillResponse" />
 	<xs:element name="sendPack" type="tns:sendPack" />
@@ -38,26 +36,6 @@
 		<xs:sequence>
 			<xs:element name="content" type="xs:base64Binary" minOccurs="0" />
 			<xs:element name="statusCode" type="xs:string" minOccurs="0" />
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="getStatusAR">
-		<xs:sequence>
-			<xs:element name="rucComprobante" type="xs:string" minOccurs="0" />
-			<xs:element name="tipoComprobante" type="xs:string" minOccurs="0" />
-			<xs:element name="serieComprobante" type="xs:string" minOccurs="0" />
-			<xs:element name="numeroComprobante" type="xs:string" minOccurs="0" />
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="getStatusResponseAR">
-		<xs:sequence>
-			<xs:element name="status" type="tns:statusResponseAR" minOccurs="0" />
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="statusResponseAR">
-		<xs:sequence>
-			<xs:element name="content" type="xs:base64Binary" minOccurs="0" />
-			<xs:element name="statusCode" type="xs:string" minOccurs="0" />
-			<xs:element name="statusMessage" type="xs:string" minOccurs="0" />
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="sendPack">
