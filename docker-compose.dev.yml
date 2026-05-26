@@ -1,0 +1,33 @@
+services:
+  # Servicio CEP Sunat API
+  cpe-sunat-api:
+    build: .
+    container_name: cpe-sunat-api
+    restart: always
+    ports:
+      - "9000:80"
+    networks:
+    - development
+    volumes:
+      # - .:/var/www/html
+      - cpe-sunat-volumen:/var/www/html/storage/app/files
+
+  cpe-sunat-worker:
+    build: .
+    container_name: cpe-sunat-worker
+    restart: always
+    command: php artisan rabbit:consume
+    networks:
+    - development
+    volumes:
+      # - .:/var/www/html
+      - cpe-sunat-volumen:/var/www/html/storage/app/files
+
+# Red compartida entre servicios
+networks:
+  development:
+    external: true
+
+# Volúmenes (persistencia)
+volumes:
+  cpe-sunat-volumen:
