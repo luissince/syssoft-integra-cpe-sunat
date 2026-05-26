@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-and-push:
-    name: Build
+    name: Build and Push Docker Image to ECR
     runs-on: ubuntu-latest
 
     steps:
@@ -42,7 +42,7 @@ jobs:
         run: docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/syssoftintegra/cpe-sunat:latest
 
   deploy-to-runs-on:
-    name: Deploy
+    name: Deploy to Production Server
     runs-on: self-hosted
     needs: build-and-push
 
