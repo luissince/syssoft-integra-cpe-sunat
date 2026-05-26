@@ -2,18 +2,16 @@ services:
   # Servicio CEP Sunat API
   cpe-sunat-principal:
     # Construcción de la imagen a partir del Dockerfile
-    build: 
-      context: .
-      dockerfile: Dockerfile
-    image: cpe-sunat-principal-image
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/syssoftintegra/cpe-sunat:latest
     # Red
     networks:
     - luis
     # Volumen
     volumes:
       - cpe-sunat-volumen:/var/www/html/storage/app/files
-    # Nombre del contenedor
+    # Comando para reiniciar el contenedor
     restart: always
+    # Nombre del contenedor
     container_name: cpe-sunat-principal
 
 # Red compartida entre servicios
