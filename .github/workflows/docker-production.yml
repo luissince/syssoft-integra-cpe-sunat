@@ -6,24 +6,59 @@ on:
       - "master"
 
 jobs:
-  build-and-deploy-app:
-    runs-on: self-hosted
-
-    env:  
-      APP_DEBUG: ${{ secrets.APP_DEBUG }}
-      APP_ENV: ${{ secrets.APP_ENV }}
+  build:
+    name: Build
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout código
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Copiar .env.example a .env
+      - name: Copy .env.example to .env
         run: cp .env.example .env
 
-      - name: Configurar valores en .env
+      - name: Configure values in .env
         run: |
-          sed -i "s~APP_DEBUG=.*~APP_DEBUG=${APP_DEBUG}~" .env
-          sed -i "s~APP_ENV=.*~APP_ENV=${APP_ENV}~" .env
+          sed -i "s~APP_DEBUG=.*~APP_DEBUG=${{ secrets.APP_DEBUG }}~" .env
+          sed -i "s~APP_ENV=.*~APP_ENV=${{ secrets.APP_ENV }}~" .env
 
-      - name: Creando y ejecutando contenedor
-        run: docker compose -f docker-compose.yml up --build -d
+      - name: Build Docker image
+        run: docker compose -f docker-compose.build.yml build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1 
+
+      - name: Agregar etiqueta latest a la imagen
+        run: docker tag cpe-sunat ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/syssoftintegra/cpe-sunat:latest
+
+      - name: Upload image to Amazon ECR
+        run: docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/syssoftintegra/cpe-sunat:latest
+
+  # build-and-deploy-app:
+  #   runs-on: self-hosted
+
+  #   env:  
+  #     APP_DEBUG: ${{ secrets.APP_DEBUG }}
+  #     APP_ENV: ${{ secrets.APP_ENV }}
+
+  #   steps:
+  #     - name: Checkout código
+  #       uses: actions/checkout@v3
+
+  #     - name: Copiar .env.example a .env
+  #       run: cp .env.example .env
+
+  #     - name: Configurar valores en .env
+  #       run: |
+  #         sed -i "s~APP_DEBUG=.*~APP_DEBUG=${APP_DEBUG}~" .env
+  #         sed -i "s~APP_ENV=.*~APP_ENV=${APP_ENV}~" .env
+
+  #     - name: Creando y ejecutando contenedor
+  #       run: docker compose -f docker-compose.yml up --build -d
