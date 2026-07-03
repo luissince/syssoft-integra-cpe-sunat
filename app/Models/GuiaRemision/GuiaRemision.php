@@ -10,8 +10,10 @@ class GuiaRemision
     public int $numeracion;
     public string $fecha;
     public string $hora;
+    public string $codigoAnexoPartida;
     public string $ubigeoPartida;
     public string $direccionPartida;
+    public string $codigoAnexoLlegada;
     public string $ubigeoLlegada;
     public string $direccionLlegada;
     public string $codigoMotivoTraslado;
@@ -44,8 +46,10 @@ class GuiaRemision
         $this->numeracion = $data['numeracion'] ?? 0;
         $this->fecha = $data['fecha'] ?? '';
         $this->hora = $data['hora'] ?? '';
+        $this->codigoAnexoPartida = $data['codigoAnexoPartida'] ?? '';
         $this->ubigeoPartida = $data['ubigeoPartida'] ?? '';
         $this->direccionPartida = $data['direccionPartida'] ?? '';
+        $this->codigoAnexoLlegada = $data['codigoAnexoLlegada'] ?? '';
         $this->ubigeoLlegada = $data['ubigeoLlegada'] ?? '';
         $this->direccionLlegada = $data['direccionLlegada'] ?? '';
         $this->codigoMotivoTraslado = $data['codigoMotivoTraslado'] ?? '';

@@ -236,6 +236,39 @@ class SunatHelper
             $path
         );
 
+        // $fileNameXml  =  '10764233889-09-T001-1.xml';
+        // // files/sunat/10764233889/
+        // $path = 'files/sunat/' . $empresa->documento . '/';
+
+        // // Storage::put($path . $fileNameXml, $xml->saveXML());
+        // Sunat::signDocumentXml($path, $fileNameXml, $certificado);
+
+        // Sunat::createZip(
+        //     Storage::path($path  . '10764233889-09-T001-1.zip'),
+        //     Storage::path($path  . $fileNameXml),
+        //     $fileNameXml
+        // );
+
+        // $soapResult = new SoapResult('', '10764233889-09-T001-1');
+        // $soapResult->setConfigGuiaRemision(Storage::path($path  . '10764233889-09-T001-1.zip'));
+        // $soapResult->sendDespatchAdvice(
+        //     [
+        //         "NumeroDocumento" => $empresa->documento,
+        //         "UsuarioSol" => $empresa->usuarioSolSunat,
+        //         "ClaveSol" => $empresa->claveSolSunat,
+        //         "IdApiSunat" => $empresa->idApiSunat,
+        //         "ClaveApiSunat" => $empresa->claveApiSunat,
+        //     ],
+        //     [
+        //         "numRucEmisor" => $empresa->documento,
+        //         "codCpe" => $guiaRemision->codigo,
+        //         "numSerie" => $guiaRemision->serie,
+        //         "numCpe" => $guiaRemision->numeracion,
+        //     ],
+        //     $empresa->tipoEnvio,
+        //     $path
+        // );
+
         if ($soapResult->isSuccess()) {
             $updateData = [
                 "xmlSunat" => $soapResult->getCode(),
@@ -243,7 +276,7 @@ class SunatHelper
             ];
             if ($soapResult->isAccepted()) {
                 $updateData += [
-                    "xmlGenerado" => Sunat::getXmlSign(),
+                    // "xmlGenerado" => Sunat::getXmlSign(),
                     "numeroTicketSunat" => $soapResult->getTicket()
                 ];
             }

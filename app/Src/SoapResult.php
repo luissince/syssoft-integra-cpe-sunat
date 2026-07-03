@@ -502,7 +502,7 @@ class SoapResult
             if ($this->ticket) {
                 $this->getStatusDespatchArchive($accessToken, $tipoEnvio, $path);
             } else {
-                $this->sendDocumentDespatchAdvice($accessToken, implode("-", $uri), $tipoEnvio, $path);
+                $this->sendDocumentDespatchAdvice($accessToken, implode("-", $uri), $tipoEnvio);
             }
         } catch (ResponseCurlException $ex) {
             $this->setSuccess(false);
@@ -622,7 +622,7 @@ class SoapResult
         }
     }
 
-    private function sendDocumentDespatchAdvice(string $token, string $uri, bool $tipoEnvio, string $path)
+    private function sendDocumentDespatchAdvice(string $token, string $uri, bool $tipoEnvio)
     {
 
         /*
