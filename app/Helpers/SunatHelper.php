@@ -289,7 +289,7 @@ class SunatHelper
                 "update" => $updateData
             ];
         } else {
-            if (in_array($soapResult->getCode(), ['0', '200', '1033'])) {
+            if ($soapResult->getCode() === '200' || $soapResult->getCode() == '1033') {
                 $updateData = [
                     "xmlSunat" => "0",
                     "xmlDescripcion" => $soapResult->getMessage(),
@@ -375,7 +375,7 @@ class SunatHelper
                     "xmlDescripcion" => $soapResult->getMessage(),
                 ];
 
-                if (in_array($soapResult->getCode(), ['0', '200', '1033'])) {
+                if ($soapResult->getCode() === '200' || $soapResult->getCode() == '1033') {
                     $updateData["xmlSunat"] = "0";
                 }
 
