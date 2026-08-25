@@ -723,7 +723,7 @@ class SoapResult
         );
         $this->setSuccess(true);
 
-        return;
+        error_log("A - sale sendDocumentDespatchAdvice");
     }
 
     private function getStatusDespatchArchive(string $token, bool $tipoEnvio, string $path)
