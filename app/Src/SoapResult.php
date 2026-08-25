@@ -503,7 +503,6 @@ class SoapResult
                 $this->getStatusDespatchArchive($accessToken, $tipoEnvio, $path);
             } else {
                 $this->sendDocumentDespatchAdvice($accessToken, implode("-", $uri), $tipoEnvio);
-                error_log("B - regreso de sendDocumentDespatchAdvice");
             }
         } catch (ResponseCurlException $ex) {
             $this->setSuccess(false);
@@ -723,8 +722,6 @@ class SoapResult
             "La Guía de remisión se envió correctamente, estado en proceso. Verifique nuevamente en unos minutos."
         );
         $this->setSuccess(true);
-
-        error_log("A - sale sendDocumentDespatchAdvice");
     }
 
     private function getStatusDespatchArchive(string $token, bool $tipoEnvio, string $path)

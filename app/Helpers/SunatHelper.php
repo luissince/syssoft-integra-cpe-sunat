@@ -308,8 +308,6 @@ class SunatHelper
             }
         }
 
-        error_log("C - antes response json");
-
         return response()->json($responseData);
     }
 
