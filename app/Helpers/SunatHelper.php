@@ -269,46 +269,56 @@ class SunatHelper
         //     $path
         // );
 
-        if ($soapResult->isSuccess()) {
-            $updateData = [
-                "xmlSunat" => $soapResult->getCode(),
-                "xmlDescripcion" => $soapResult->getMessage(),
-            ];
-            if ($soapResult->isAccepted()) {
-                $updateData += [
-                    // "xmlGenerado" => Sunat::getXmlSign(),
-                    "numeroTicketSunat" => $soapResult->getTicket()
-                ];
-            }
-
-            $responseData = [
-                "state" => $soapResult->isSuccess(),
-                "accept" => $soapResult->isAccepted(),
-                "code" => $soapResult->getCode(),
-                "description" => $soapResult->getMessage(),
-                "update" => $updateData
-            ];
-        } else {
-            if ($soapResult->getCode() === "200" || $soapResult->getCode() == "1033") {
-                $updateData = [
-                    "xmlSunat" => "0",
-                    "xmlDescripcion" => $soapResult->getMessage(),
-                ];
-
-                $responseData = [
-                    "state" => false,
-                    "code" => $soapResult->getCode(),
-                    "description" => $soapResult->getMessage(),
-                    "update" => $updateData
-                ];
-            } else {
-                return response()->json([
-                    "message" => $soapResult->getMessage()
-                ], 500);
-            }
-        }
+        $responseData = [
+            "state" => true,
+            "accept" => true,
+            "code" => "",
+            "description" => "test",
+            "update" => []
+        ];
 
         return response()->json($responseData);
+
+        // if ($soapResult->isSuccess()) {
+        //     $updateData = [
+        //         "xmlSunat" => $soapResult->getCode(),
+        //         "xmlDescripcion" => $soapResult->getMessage(),
+        //     ];
+        //     if ($soapResult->isAccepted()) {
+        //         $updateData += [
+        //             // "xmlGenerado" => Sunat::getXmlSign(),
+        //             "numeroTicketSunat" => $soapResult->getTicket()
+        //         ];
+        //     }
+
+        //     $responseData = [
+        //         "state" => $soapResult->isSuccess(),
+        //         "accept" => $soapResult->isAccepted(),
+        //         "code" => $soapResult->getCode(),
+        //         "description" => $soapResult->getMessage(),
+        //         "update" => $updateData
+        //     ];
+        // } else {
+        //     if ($soapResult->getCode() === "200" || $soapResult->getCode() == "1033") {
+        //         $updateData = [
+        //             "xmlSunat" => "0",
+        //             "xmlDescripcion" => $soapResult->getMessage(),
+        //         ];
+
+        //         $responseData = [
+        //             "state" => false,
+        //             "code" => $soapResult->getCode(),
+        //             "description" => $soapResult->getMessage(),
+        //             "update" => $updateData
+        //         ];
+        //     } else {
+        //         return response()->json([
+        //             "message" => $soapResult->getMessage()
+        //         ], 500);
+        //     }
+        // }
+
+        // return response()->json($responseData);
     }
 
     public static function getStatusDespatchAdvice(string $fileName, GuiaRemision $guiaRemision, Empresa $empresa, string $ticket)
