@@ -500,9 +500,9 @@ class SoapResult
             $accessToken = $this->getTokenApiSunat($credenciales, $tipoEnvio);
 
             if ($this->ticket) {
-                $this->getStatusDespatchArchive($accessToken, $tipoEnvio, $path);
+                return $this->getStatusDespatchArchive($accessToken, $tipoEnvio, $path);
             } else {
-                $this->sendDocumentDespatchAdvice($accessToken, implode("-", $uri), $tipoEnvio);
+                return $this->sendDocumentDespatchAdvice($accessToken, implode("-", $uri), $tipoEnvio);
             }
         } catch (ResponseCurlException $ex) {
             $this->setSuccess(false);
@@ -710,8 +710,6 @@ class SoapResult
             );
         }
 
-        usleep(100000);
-
         /*
         |--------------------------------------------------------------------------
         | SUCCESS
@@ -725,7 +723,7 @@ class SoapResult
         );
         $this->setSuccess(true);
 
-        error_log("ANTES DE TERMINAR SEND DOCUMENT");
+        return;
     }
 
     private function getStatusDespatchArchive(string $token, bool $tipoEnvio, string $path)
