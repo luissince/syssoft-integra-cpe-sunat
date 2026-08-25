@@ -500,9 +500,10 @@ class SoapResult
             $accessToken = $this->getTokenApiSunat($credenciales, $tipoEnvio);
 
             if ($this->ticket) {
-                return $this->getStatusDespatchArchive($accessToken, $tipoEnvio, $path);
+                $this->getStatusDespatchArchive($accessToken, $tipoEnvio, $path);
             } else {
-                return $this->sendDocumentDespatchAdvice($accessToken, implode("-", $uri), $tipoEnvio);
+                $this->sendDocumentDespatchAdvice($accessToken, implode("-", $uri), $tipoEnvio);
+                error_log("B - regreso de sendDocumentDespatchAdvice");
             }
         } catch (ResponseCurlException $ex) {
             $this->setSuccess(false);
