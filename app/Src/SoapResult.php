@@ -710,9 +710,7 @@ class SoapResult
             );
         }
 
-        error_log(json_encode([
-            "data" => $result
-        ]));
+        usleep(100000);
 
         /*
         |--------------------------------------------------------------------------
@@ -726,6 +724,8 @@ class SoapResult
             "La Guía de remisión se envió correctamente, estado en proceso. Verifique nuevamente en unos minutos."
         );
         $this->setSuccess(true);
+
+        error_log("ANTES DE TERMINAR SEND DOCUMENT");
     }
 
     private function getStatusDespatchArchive(string $token, bool $tipoEnvio, string $path)
