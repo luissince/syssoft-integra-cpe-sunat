@@ -1,16 +1,19 @@
-FROM php:7.4-fpm-bullseye
+FROM php:7.4-fpm
 
-RUN apt-get update && apt-get install -y \
-    nginx \
-    unzip \
-    git \
-    curl \
-    libzip-dev \
-    libpng-dev \
-    libxml2-dev \
-    libicu-dev \
-    libonig-dev \
-    librabbitmq-dev \
+RUN sed -i 's|deb.debian.org/debian-security|archive.debian.org/debian-security|g; s|deb.debian.org/debian|archive.debian.org/debian|g' /etc/apt/sources.list \
+    && echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid \
+    && apt-get update \
+    && apt-get install -y \
+        nginx \
+        unzip \
+        git \
+        curl \
+        libzip-dev \
+        libpng-dev \
+        libxml2-dev \
+        libicu-dev \
+        libonig-dev \
+        librabbitmq-dev \
     && docker-php-ext-install \
         pdo \
         pdo_mysql \
