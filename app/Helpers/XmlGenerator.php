@@ -924,12 +924,6 @@ class XmlGenerator
             $cbc->setAttribute('listURI', "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo18");
             $cbc = $cac_shipment_stage->appendChild($cbc);
 
-            // FECHA DE TRASLADO
-            $cac_transit_period = $xml->createElement('cac:TransitPeriod');
-            $cac_transit_period = $cac_shipment_stage->appendChild($cac_transit_period);
-            $cbc = $xml->createElement('cbc:StartDate', $fechaTraslado->format('Y-m-d'));
-            $cbc = $cac_transit_period->appendChild($cbc);
-
             // EMPRESA PÚBLICA QUE LLEVA LA MERCADERÍA
             $cac_carrier_party = $xml->createElement('cac:CarrierParty');
             $cac_carrier_party = $cac_shipment_stage->appendChild($cac_carrier_party);
@@ -947,6 +941,11 @@ class XmlGenerator
             $cbc = $xml->createElement('cbc:CompanyID', '0001');
             $cbc = $cac_party_legal_entity->appendChild($cbc);
             $cac_party_legal_entity = $cac_carrier_party->appendChild($cac_party_legal_entity);
+
+            // FECHA DE TRASLADO
+            $cac_transit_period = $xml->createElement('cac:LoadingTransportEvent');            
+            $cac_transit_period->appendChild($xml->createElement('cbc:OccurrenceDate', $fechaTraslado->format('Y-m-d')));
+            $cac_shipment_stage->appendChild($cac_transit_period);
 
             /**
              * DIRECCION Y UBIGEO DEL COMPROBANTE
