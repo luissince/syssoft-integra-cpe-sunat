@@ -7,7 +7,6 @@ use App\Helpers\XmlGenerator;
 use App\Models\Certificado;
 use App\Models\Detalle;
 use App\Models\Empresa;
-use App\Models\Cuota;
 use App\Models\Sucursal;
 use App\Models\Venta;
 use DateTime;
@@ -30,13 +29,7 @@ class VentaController extends Controller
             $detalles[] = $detalle;
         }
 
-        $cuotas = [];
-        foreach ($request->cuotas as $cuota) {
-            $cuota = new Cuota($cuota);
-            $cuotas[] = $cuota;
-        }
-
-        $xml = XmlGenerator::createInvoiceXml($venta, $detalles, $cuotas, $empresa, $sucursal);
+        $xml = XmlGenerator::createInvoiceXml($venta, $detalles, $empresa, $sucursal);
 
         $fileName = $empresa->documento . '-' . $venta->codigoVenta . '-' . $venta->serie . '-' . $venta->numeracion;
 

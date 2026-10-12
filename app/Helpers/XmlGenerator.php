@@ -8,11 +8,11 @@ use App\Models\Empresa;
 use App\Models\Sucursal;
 use App\Models\Venta;
 use App\Models\Detalle;
-use App\Models\Cuota;
 use App\Models\FormaPago;
 use App\Models\GuiaRemision\Detalle as GuiaRemisionDetalle;
 use App\Models\GuiaRemision\GuiaRemision;
 use App\Src\NumberLleters;
+use App\Src\Util;
 use DateTime;
 use DOMDocument;
 
@@ -21,9 +21,8 @@ class XmlGenerator
 
     /**
      * @param Detalle[] $detalles
-     * @param Cuota[] $cuotas
      */
-    public static function createInvoiceXml(Venta $venta, array $detalles, array $cuotas, Empresa $empresa, Sucursal $sucursal): DOMDocument
+    public static function createInvoiceXml(Venta $venta, array $detalles, Empresa $empresa, Sucursal $sucursal): DOMDocument
     {
         $sub_total = array_reduce($detalles, function ($acumulador, $producto) {
             $igv = floatval($producto->porcentaje) / 100.00;
@@ -85,7 +84,7 @@ class XmlGenerator
         $cbc = $Invoice->appendChild($cbc);
         $cbc->setAttribute('listID', "0101");
         $cbc = $xml->createElement('cbc:Note');
-        $cbc->appendChild($xml->createCDATASection(NumberLleters::getResult(round($total, 2, PHP_ROUND_HALF_UP), $venta->moneda)));
+        $cbc->appendChild($xml->createCDATASection(NumberLleters::getResult(Util::roundingValue($total, 2), $venta->moneda)));
         $cbc = $Invoice->appendChild($cbc);
         $cbc->setAttribute('languageLocaleID', "1000");
         $cbc = $xml->createElement('cbc:DocumentCurrencyCode', $venta->codiso);
@@ -175,7 +174,7 @@ class XmlGenerator
 
         //FORMA PAGO
 
-        if ($venta->idFormaPago == FormaPago::CONTADO || $venta->idFormaPago == FormaPago::ADELANTADO) {
+        if ($venta->idFormaPago == FormaPago::CONTADO) {
             $PaymentTerms = $xml->createElement('cac:PaymentTerms');
             $PaymentTerms = $Invoice->appendChild($PaymentTerms);
             $cbc = $xml->createElement('cbc:ID', "FormaPago");
@@ -184,111 +183,40 @@ class XmlGenerator
             $cbc = $PaymentTerms->appendChild($cbc);
         }
 
-        // if ($venta->idFormaPago == FormaPago::CREDITO_FIJO) {
-        //     $PaymentTerms = $xml->createElement('cac:PaymentTerms');
-        //     $PaymentTerms = $Invoice->appendChild($PaymentTerms);
-
-        //     $cbc = $xml->createElement('cbc:ID', "FormaPago");
-        //     $PaymentTerms->appendChild($cbc);
-
-        //     $cbc = $xml->createElement('cbc:PaymentMeansID', "Credito");
-        //     $PaymentTerms->appendChild($cbc);
-
-        //     $cbc = $xml->createElement('cbc:Amount', round($total, 2));
-        //     $cbc->setAttribute('currencyID', $venta->codiso);
-        //     $PaymentTerms->appendChild($cbc);
-
-        //     $countPm = 0;
-        //     foreach ($cuotas as $cuota) {
-        //         $countPm++;
-        //         $cuotaV = sprintf("Cuota%03d", $countPm); // Genera Cuota001, Cuota002...
-
-        //         $PaymentTerms = $xml->createElement('cac:PaymentTerms');
-        //         $PaymentTerms = $Invoice->appendChild($PaymentTerms);
-
-        //         $cbc = $xml->createElement('cbc:ID', $cuotaV);
-        //         $PaymentTerms->appendChild($cbc);
-
-        //         $cbc = $xml->createElement('cbc:PaymentMeansID', $cuotaV);
-        //         $PaymentTerms->appendChild($cbc);
-
-        //         $cbc = $xml->createElement('cbc:PaymentDueDate', date("Y-m-d", strtotime($cuota->fecha)));
-        //         $PaymentTerms->appendChild($cbc);
-
-        //         $cbc = $xml->createElement('cbc:Amount', round($cuota->monto, 2));
-        //         $cbc->setAttribute('currencyID', $venta->codiso);
-        //         $PaymentTerms->appendChild($cbc);
-        //     }
-        // }
-
-        if ($venta->idFormaPago == FormaPago::CREDITO_FIJO) {
+        if ($venta->idFormaPago == FormaPago::CREDITO) {
             $PaymentTerms = $xml->createElement('cac:PaymentTerms');
             $PaymentTerms = $Invoice->appendChild($PaymentTerms);
             $cbc = $xml->createElement('cbc:ID', "FormaPago");
             $cbc = $PaymentTerms->appendChild($cbc);
             $cbc = $xml->createElement('cbc:PaymentMeansID', "Credito");
             $cbc = $PaymentTerms->appendChild($cbc);
-            $cbc = $xml->createElement('cbc:Amount', number_format(round($total, 2, PHP_ROUND_HALF_UP), 2, '.', ''));
+
+
+            $PaymentTerms = $xml->createElement('cac:PaymentTerms');
+            $PaymentTerms = $Invoice->appendChild($PaymentTerms);
+            $cbc = $xml->createElement('cbc:PaymentMeansID', "Cuota001");
+            $cbc = $PaymentTerms->appendChild($cbc);
+            $cbc = $xml->createElement('cbc:Amount', Util::roundingValue($total, 2));
             $cbc->setAttribute('currencyID', $venta->codiso);
             $cbc = $PaymentTerms->appendChild($cbc);
-
-            $countPm = 0;
-            foreach ($cuotas as $cuota) {
-                $countPm++;
-                $cuotaV = sprintf("Cuota%03d", $countPm);
-
-                $PaymentTerms = $xml->createElement('cac:PaymentTerms');
-                $PaymentTerms = $Invoice->appendChild($PaymentTerms);
-                $cbc = $xml->createElement('cbc:ID', "FormaPago");
-                $cbc = $PaymentTerms->appendChild($cbc);
-                $cbc = $xml->createElement('cbc:PaymentMeansID', $cuotaV);
-                $cbc = $PaymentTerms->appendChild($cbc);
-                $cbc = $xml->createElement('cbc:Amount', number_format(round($cuota->monto, 2, PHP_ROUND_HALF_UP), 2, '.', ''));
-                $cbc->setAttribute('currencyID', $venta->codiso);
-                $cbc = $PaymentTerms->appendChild($cbc);
-                $cbc = $xml->createElement('cbc:PaymentDueDate', date("Y-m-d", strtotime($cuota->fecha)));
-                $cbc = $PaymentTerms->appendChild($cbc);
-            }
-        }
-
-        if ($venta->idFormaPago == FormaPago::CREDITO_VARIABLE) {
-            // $PaymentTerms = $xml->createElement('cac:PaymentTerms');
-            // $PaymentTerms = $Invoice->appendChild($PaymentTerms);
-            // $cbc = $xml->createElement('cbc:ID', "FormaPago");
-            // $cbc = $PaymentTerms->appendChild($cbc);
-            // $cbc = $xml->createElement('cbc:PaymentMeansID', "Credito");
-            // $cbc = $PaymentTerms->appendChild($cbc);
-            // $cbc = $xml->createElement('cbc:Amount', number_format(round($total, 2, PHP_ROUND_HALF_UP), 2, '.', ''));
-            // $cbc->setAttribute('currencyID', $venta->codiso);
-            // $cbc = $PaymentTerms->appendChild($cbc);
-
-            // $PaymentTerms = $xml->createElement('cac:PaymentTerms');
-            // $PaymentTerms = $Invoice->appendChild($PaymentTerms);
-            // $cbc = $xml->createElement('cbc:ID', "FormaPago");
-            // $cbc = $PaymentTerms->appendChild($cbc);
-            // $cbc = $xml->createElement('cbc:PaymentMeansID', "Cuota001");
-            // $cbc = $PaymentTerms->appendChild($cbc);
-            // $cbc = $xml->createElement('cbc:Amount', number_format(round($total, 2, PHP_ROUND_HALF_UP), 2, '.', ''));
-            // $cbc->setAttribute('currencyID', $venta->codiso);
-            // $cbc = $PaymentTerms->appendChild($cbc);
-            // $cbc = $xml->createElement('cbc:PaymentDueDate', date("Y-m-d", strtotime($venta->FechaVencimiento)));
-            // $cbc = $PaymentTerms->appendChild($cbc);
+            $cbc = $xml->createElement('cbc:PaymentDueDate', date("Y-m-d", strtotime($venta->fechaVencimiento)));
+            $cbc = $PaymentTerms->appendChild($cbc);
         }
 
         // TOTALES 
         $cac_TaxTotal = $xml->createElement('cac:TaxTotal');
         $cac_TaxTotal = $Invoice->appendChild($cac_TaxTotal);
-        $cbc = $xml->createElement('cbc:TaxAmount', number_format(round($impuesto, 2, PHP_ROUND_HALF_UP), 2, '.', ''));
+        $cbc = $xml->createElement('cbc:TaxAmount', Util::roundingValue($impuesto, 2));
         $cbc->setAttribute('currencyID', $venta->codiso);
         $cbc = $cac_TaxTotal->appendChild($cbc);
 
         if ($impuesto > 0) {
             $cac_TaxSubtotal = $xml->createElement('cac:TaxSubtotal');
             $cac_TaxSubtotal = $cac_TaxTotal->appendChild($cac_TaxSubtotal);
-            $cbc = $xml->createElement('cbc:TaxableAmount', number_format(round($sub_total, 2, PHP_ROUND_HALF_UP), 2, '.', ''));
+            $cbc = $xml->createElement('cbc:TaxableAmount', Util::roundingValue($sub_total, 2));
             $cbc = $cac_TaxSubtotal->appendChild($cbc);
             $cbc->setAttribute('currencyID', $venta->codiso);
-            $cbc = $xml->createElement('cbc:TaxAmount', number_format(round($impuesto, 2, PHP_ROUND_HALF_UP), 2, '.', ''));
+            $cbc = $xml->createElement('cbc:TaxAmount', Util::roundingValue($impuesto, 2));
             $cbc = $cac_TaxSubtotal->appendChild($cbc);
             $cbc->setAttribute('currencyID', $venta->codiso);
             $cac_TaxCategory = $xml->createElement('cac:TaxCategory');
@@ -304,10 +232,10 @@ class XmlGenerator
         } else {
             $cac_TaxSubtotal = $xml->createElement('cac:TaxSubtotal');
             $cac_TaxSubtotal = $cac_TaxTotal->appendChild($cac_TaxSubtotal);
-            $cbc = $xml->createElement('cbc:TaxableAmount', number_format(round($sub_total, 2, PHP_ROUND_HALF_UP), 2, '.', ''));
+            $cbc = $xml->createElement('cbc:TaxableAmount', Util::roundingValue($sub_total, 2));
             $cbc = $cac_TaxSubtotal->appendChild($cbc);
             $cbc->setAttribute('currencyID', $venta->codiso);
-            $cbc = $xml->createElement('cbc:TaxAmount', number_format(round($impuesto, 2, PHP_ROUND_HALF_UP), 2, '.', ''));
+            $cbc = $xml->createElement('cbc:TaxAmount', Util::roundingValue($impuesto, 2));
             $cbc = $cac_TaxSubtotal->appendChild($cbc);
             $cbc->setAttribute('currencyID', $venta->codiso);
             $cac_TaxCategory = $xml->createElement('cac:TaxCategory');
@@ -325,13 +253,13 @@ class XmlGenerator
         // LEGAL MONETARY TOTAL  
         $cac_LegalMonetaryTotal = $xml->createElement('cac:LegalMonetaryTotal');
         $cac_LegalMonetaryTotal = $Invoice->appendChild($cac_LegalMonetaryTotal);
-        $cbc = $xml->createElement('cbc:LineExtensionAmount', number_format(round($sub_total, 2, PHP_ROUND_HALF_UP), 2, '.', '')); //
+        $cbc = $xml->createElement('cbc:LineExtensionAmount', Util::roundingValue($sub_total, 2));
         $cbc = $cac_LegalMonetaryTotal->appendChild($cbc);
         $cbc->setAttribute('currencyID',  $venta->codiso);
-        $cbc = $xml->createElement('cbc:TaxInclusiveAmount', number_format(round($total, 2, PHP_ROUND_HALF_UP), 2, '.', ''));
+        $cbc = $xml->createElement('cbc:TaxInclusiveAmount', Util::roundingValue($total, 2));
         $cbc = $cac_LegalMonetaryTotal->appendChild($cbc);
         $cbc->setAttribute('currencyID',  $venta->codiso);
-        $cbc = $xml->createElement('cbc:PayableAmount', number_format(round($total, 2, PHP_ROUND_HALF_UP), 2, '.', '')); //
+        $cbc = $xml->createElement('cbc:PayableAmount', Util::roundingValue($total, 2));
         $cbc = $cac_LegalMonetaryTotal->appendChild($cbc);
         $cbc->setAttribute('currencyID',  $venta->codiso);
 
@@ -355,17 +283,17 @@ class XmlGenerator
             $InvoiceLine = $Invoice->appendChild($InvoiceLine);
             $cbc = $xml->createElement('cbc:ID', $idlinea);
             $cbc = $InvoiceLine->appendChild($cbc);
-            $cbc = $xml->createElement('cbc:InvoicedQuantity', number_format(round($cantidad, 2, PHP_ROUND_HALF_UP), 2, '.', ''));
+            $cbc = $xml->createElement('cbc:InvoicedQuantity', Util::roundingValue($cantidad, 2));
             $cbc = $InvoiceLine->appendChild($cbc);
             $cbc->setAttribute('unitCode', $detalle->codigoMedida);
-            $cbc = $xml->createElement('cbc:LineExtensionAmount', number_format(round($importeBrutoTotal, 2, PHP_ROUND_HALF_UP), 2, '.', ''));
+            $cbc = $xml->createElement('cbc:LineExtensionAmount', Util::roundingValue($importeBrutoTotal, 2));
             $cbc = $InvoiceLine->appendChild($cbc);
             $cbc->setAttribute('currencyID', $venta->codiso);
             $pricing = $xml->createElement('cac:PricingReference');
             $pricing = $InvoiceLine->appendChild($pricing);
             $cac = $xml->createElement('cac:AlternativeConditionPrice');
             $cac = $pricing->appendChild($cac);
-            $cbc = $xml->createElement('cbc:PriceAmount', number_format(round($importeNeto, 2, PHP_ROUND_HALF_UP), 2, '.', ''));
+            $cbc = $xml->createElement('cbc:PriceAmount', Util::roundingValue($importeNeto, 2));
             $cbc = $cac->appendChild($cbc);
             $cbc->setAttribute('currencyID', $venta->codiso);
             $cbc = $xml->createElement('cbc:PriceTypeCode', '01');
@@ -373,20 +301,20 @@ class XmlGenerator
 
             $taxtotal = $xml->createElement('cac:TaxTotal');
             $taxtotal = $InvoiceLine->appendChild($taxtotal);
-            $cbc = $xml->createElement('cbc:TaxAmount', number_format(round($impuestoTotal, 2, PHP_ROUND_HALF_UP), 2, '.', ''));
+            $cbc = $xml->createElement('cbc:TaxAmount', Util::roundingValue($impuestoTotal, 2));
             $cbc = $taxtotal->appendChild($cbc);
             $cbc->setAttribute('currencyID', $venta->codiso);
             $taxtsubtotal = $xml->createElement('cac:TaxSubtotal');
             $taxtsubtotal = $taxtotal->appendChild($taxtsubtotal);
-            $cbc = $xml->createElement('cbc:TaxableAmount', number_format(round($importeBrutoTotal, 2, PHP_ROUND_HALF_UP), 2, '.', ''));
+            $cbc = $xml->createElement('cbc:TaxableAmount', Util::roundingValue($importeBrutoTotal, 2));
             $cbc = $taxtsubtotal->appendChild($cbc);
             $cbc->setAttribute('currencyID', $venta->codiso);
-            $cbc = $xml->createElement('cbc:TaxAmount', number_format(round($impuestoTotal, 2, PHP_ROUND_HALF_UP), 2, '.', ''));
+            $cbc = $xml->createElement('cbc:TaxAmount', Util::roundingValue($impuestoTotal, 2));
             $cbc = $taxtsubtotal->appendChild($cbc);
             $cbc->setAttribute('currencyID', $venta->codiso);
             $taxtcategory = $xml->createElement('cac:TaxCategory');
             $taxtcategory = $taxtsubtotal->appendChild($taxtcategory);
-            $cbc = $xml->createElement('cbc:Percent', round($impuesto, 0, PHP_ROUND_HALF_UP));
+            $cbc = $xml->createElement('cbc:Percent', Util::roundingValue($impuesto, 0));
             $cbc = $taxtcategory->appendChild($cbc);
             $cbc = $xml->createElement('cbc:TaxExemptionReasonCode', $detalle->codigo);
             $cbc = $taxtcategory->appendChild($cbc);
@@ -418,7 +346,7 @@ class XmlGenerator
             $cbc = $item->appendChild($cbc);
             $price = $xml->createElement('cac:Price');
             $price = $InvoiceLine->appendChild($price);
-            $cbc = $xml->createElement('cbc:PriceAmount', number_format(round($precioBruto, 4, PHP_ROUND_HALF_UP), 4, '.', ''));
+            $cbc = $xml->createElement('cbc:PriceAmount', Util::roundingValue($precioBruto, 4));
             $cbc = $price->appendChild($cbc);
             $cbc->setAttribute('currencyID', $venta->codiso);
         }
@@ -943,7 +871,7 @@ class XmlGenerator
             $cac_party_legal_entity = $cac_carrier_party->appendChild($cac_party_legal_entity);
 
             // FECHA DE TRASLADO
-            $cac_transit_period = $xml->createElement('cac:LoadingTransportEvent');            
+            $cac_transit_period = $xml->createElement('cac:LoadingTransportEvent');
             $cac_transit_period->appendChild($xml->createElement('cbc:OccurrenceDate', $fechaTraslado->format('Y-m-d')));
             $cac_shipment_stage->appendChild($cac_transit_period);
 

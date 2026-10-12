@@ -20,7 +20,6 @@ class SunatHelper
     public static function sendBill(string $fileName, DOMDocument $xml, Empresa $empresa, Certificado $certificado)
     {
         $fileNameXml  = $fileName . '.xml';
-        // files/sunat/10764233889/
         $path = 'files/sunat/' . $empresa->documento . '/';
 
         Storage::put($path . $fileNameXml, $xml->saveXML());

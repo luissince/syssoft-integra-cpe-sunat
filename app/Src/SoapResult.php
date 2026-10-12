@@ -11,7 +11,8 @@ use App\Src\SoapBuilder;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
-
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 
 class SoapResult
 {
@@ -70,13 +71,10 @@ class SoapResult
             }
 
             $cdr = base64_decode($response);
-            // $archivo = fopen('../files/R-' . $this->filename . '.zip', 'w+');
             $archivo = fopen(Storage::path($path . "R-" . $this->filename . '.zip'), 'w+');
             fputs($archivo, $cdr);
             fclose($archivo);
-            // chmod('../files/R-' . $this->filename . '.zip', 0777);
 
-            // $isExtract = Sunat::extractZip('../files/R-' . $this->filename . '.zip', '../files/');
             $isExtract = Sunat::extractZip(
                 Storage::path($path . "R-" . $this->filename . '.zip'),
                 Storage::path($path)
@@ -86,7 +84,6 @@ class SoapResult
                 throw new Exception("No se pudo extraer el contenido del archivo zip.");
             }
 
-            // $xml = file_get_contents('../files/R-' . $this->filename . '.xml');
             $xml = Storage::get($path . 'R-' . $this->filename . '.xml');
             $DOM = new DOMDocument('1.0', 'utf-8');
             $DOM->preserveWhiteSpace = FALSE;
@@ -110,14 +107,6 @@ class SoapResult
                 $hashCode = $Nodo->nodeValue;
             }
 
-            // Storage::path("public/files/R-" . $this->filename . '.zip');
-            // if (file_exists('../files/' . $this->filename . '.zip')) {
-            //     unlink('../files/' . $this->filename . '.zip');
-            // }
-            // if (file_exists('../files/R-' . $this->filename . '.zip')) {
-            //     unlink('../files/R-' . $this->filename . '.zip');
-            // }
-
             if (file_exists(Storage::path($path  . $this->filename . '.zip'))) {
                 unlink(Storage::path($path  . $this->filename . '.zip'));
             }
@@ -134,7 +123,7 @@ class SoapResult
             $this->setDescription($description);
             $this->setHashCode($hashCode);
             $this->setSuccess(true);
-        } catch (SoapFault $ex) {
+        } catch (SoapFault $ex) {            
             if (file_exists(Storage::path($path . $this->filename . '.xml'))) {
                 unlink(Storage::path($path . $this->filename . '.xml'));
             }
@@ -147,7 +136,7 @@ class SoapResult
             $this->setSuccess(false);
             $this->setCode($code);
             $this->setDescription($message);
-        } catch (Exception $ex) {
+        } catch (Exception $ex) {           
             if (file_exists(Storage::path($path . $this->filename . '.xml'))) {
                 unlink(Storage::path($path . $this->filename . '.xml'));
             }
@@ -728,10 +717,10 @@ class SoapResult
     {
 
         /*
-    |--------------------------------------------------------------------------
-    | URL
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | URL
+        |--------------------------------------------------------------------------
+        */
         $url = $tipoEnvio === false
             ? 'https://gre-test.nubefact.com/v1/contribuyente/gem/comprobantes/envios/' . $this->ticket
             : 'https://api-cpe.sunat.gob.pe/v1/contribuyente/gem/comprobantes/envios/' . $this->ticket;
@@ -741,16 +730,37 @@ class SoapResult
         | REQUEST
         |--------------------------------------------------------------------------
         */
-        $response = Http::withToken($token)
-            ->acceptJson()
-            ->get($url);
+        $ch = curl_init();
+
+        curl_setopt_array($ch, [
+            CURLOPT_URL            => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => [
+                'Authorization: Bearer ' . $token,
+                'Accept: application/json',
+            ],
+            CURLOPT_TIMEOUT        => 30,
+        ]);
+
+        $body     = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlErr  = curl_error($ch);
+
+        curl_close($ch);
+
+        error_log(json_encode([
+            "title" => "CurlException",
+            "body"  => $body,
+            "code"  => $httpCode,
+            "error" => $curlErr,
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
 
         /*
         |--------------------------------------------------------------------------
         | BODY VACÍO
         |--------------------------------------------------------------------------
         */
-        if (!$response->body()) {
+        if (!$body) {
 
             throw new Exception(
                 'Respuesta vacía'
@@ -762,8 +772,7 @@ class SoapResult
         | JSON
         |--------------------------------------------------------------------------
         */
-        $result = $response->json();
-
+        $result = json_decode($body, true);
 
         /*
         |--------------------------------------------------------------------------
@@ -779,24 +788,10 @@ class SoapResult
 
         /*
         |--------------------------------------------------------------------------
-        | JSON
-        |--------------------------------------------------------------------------
-        */
-        $result = $response->json();
-
-        if (!is_array($result)) {
-
-            throw new Exception(
-                "JSON inválido"
-            );
-        }
-
-        /*
-        |--------------------------------------------------------------------------
         | ERROR HTTP
         |--------------------------------------------------------------------------
         */
-        if ($response->failed()) {
+        if ($httpCode >= 400) {
 
             throw new ResponseCurlException(
                 (string)($result['cod'] ?? '0'),
@@ -843,7 +838,7 @@ class SoapResult
             throw new ResponseCurlException(
                 (string)($result['error']['numError'] ?? ''),
                 (string)($result['error']['desError'] ?? 'Error SUNAT'),
-                $response->status()
+                $httpCode
             );
         }
 

@@ -22,7 +22,7 @@ class Util
 
     public static function roundingValue(float $valor, int $decimals = 2)
     {
-        return number_format(round($valor, 2, PHP_ROUND_HALF_UP), $decimals, '.', '');
+        return number_format(round((float)$valor, $decimals, PHP_ROUND_HALF_UP), $decimals, '.', '');
     }
 
     public static function round($value, $precision = 2)

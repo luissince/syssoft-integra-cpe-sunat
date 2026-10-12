@@ -29,7 +29,7 @@ class GuiaRemisionController extends Controller
         }
 
         $detalles = [];
-        foreach ($request->detalle as $detalleData) {
+        foreach ($request->detalles as $detalleData) {
             $detalle = new Detalle($detalleData);
             $detalles[] = $detalle;
         }
