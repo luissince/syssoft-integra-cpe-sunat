@@ -190,13 +190,18 @@ class XmlGenerator
             $cbc = $PaymentTerms->appendChild($cbc);
             $cbc = $xml->createElement('cbc:PaymentMeansID', "Credito");
             $cbc = $PaymentTerms->appendChild($cbc);
+            $cbc = $xml->createElement('cbc:Amount', Util::roundingValue($total, 2));
+            $cbc->setAttribute('currencyID', $venta->codiso);
+            $cbc = $PaymentTerms->appendChild($cbc);
 
 
             $PaymentTerms = $xml->createElement('cac:PaymentTerms');
             $PaymentTerms = $Invoice->appendChild($PaymentTerms);
+            $cbc = $xml->createElement('cbc:ID', "FormaPago");
+            $cbc = $PaymentTerms->appendChild($cbc);
             $cbc = $xml->createElement('cbc:PaymentMeansID', "Cuota001");
             $cbc = $PaymentTerms->appendChild($cbc);
-            $cbc = $xml->createElement('cbc:Amount', Util::roundingValue($total, 2));
+            $cbc = $xml->createElement('cbc:Amount',  Util::roundingValue($total, 2));
             $cbc->setAttribute('currencyID', $venta->codiso);
             $cbc = $PaymentTerms->appendChild($cbc);
             $cbc = $xml->createElement('cbc:PaymentDueDate', date("Y-m-d", strtotime($venta->fechaVencimiento)));

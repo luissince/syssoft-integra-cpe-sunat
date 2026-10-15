@@ -124,12 +124,12 @@ class SoapResult
             $this->setHashCode($hashCode);
             $this->setSuccess(true);
         } catch (SoapFault $ex) {            
-            if (file_exists(Storage::path($path . $this->filename . '.xml'))) {
-                unlink(Storage::path($path . $this->filename . '.xml'));
-            }
-            if (file_exists(Storage::path($path . $this->filename . '.zip'))) {
-                unlink(Storage::path($path . $this->filename . '.zip'));
-            }
+            // if (file_exists(Storage::path($path . $this->filename . '.xml'))) {
+            //     unlink(Storage::path($path . $this->filename . '.xml'));
+            // }
+            // if (file_exists(Storage::path($path . $this->filename . '.zip'))) {
+            //     unlink(Storage::path($path . $this->filename . '.zip'));
+            // }
 
             $code = preg_replace('/[^0-9]/', '', $ex->faultcode);
             $message = $ex->faultstring;
@@ -137,15 +137,15 @@ class SoapResult
             $this->setCode($code);
             $this->setDescription($message);
         } catch (Exception $ex) {           
-            if (file_exists(Storage::path($path . $this->filename . '.xml'))) {
-                unlink(Storage::path($path . $this->filename . '.xml'));
-            }
-            if (file_exists(Storage::path($path . $this->filename . '.zip'))) {
-                unlink(Storage::path($path . $this->filename . '.zip'));
-            }
-            if (file_exists(Storage::path($path . 'R-' . $this->filename . '.zip'))) {
-                unlink(Storage::path($path . 'R-' . $this->filename . '.zip'));
-            }
+            // if (file_exists(Storage::path($path . $this->filename . '.xml'))) {
+            //     unlink(Storage::path($path . $this->filename . '.xml'));
+            // }
+            // if (file_exists(Storage::path($path . $this->filename . '.zip'))) {
+            //     unlink(Storage::path($path . $this->filename . '.zip'));
+            // }
+            // if (file_exists(Storage::path($path . 'R-' . $this->filename . '.zip'))) {
+            //     unlink(Storage::path($path . 'R-' . $this->filename . '.zip'));
+            // }
 
             $this->setSuccess(false);
             $this->setError(true);

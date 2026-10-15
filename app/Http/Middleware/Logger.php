@@ -17,18 +17,26 @@ class Logger
      */
     public function handle(Request $request, Closure $next)
     {
-        error_log(json_encode([
-            'url' => $request->fullUrl(),
-        ]));
-        error_log(json_encode([
-            'method' => $request->method(),
-        ]));
-        error_log(json_encode([
-            'headers' => $request->headers->all(),
-        ]));
-        error_log(json_encode([
-            'body' => $request->all(),
-        ]));
+        error_log('========== HTTP REQUEST ==========');
+        error_log('URL: ' . $request->fullUrl());
+        error_log('METHOD: ' . $request->method());
+        error_log('IP: ' . $request->ip());
+
+        error_log('HEADERS: ' . json_encode(
+            $request->headers->all(),
+            JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
+        ));
+
+        error_log('BODY: ' . json_encode(
+            $request->except([
+                'password',
+                'password_confirmation',
+                'token',
+            ]),
+            JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE
+        ));
+
+        error_log('===================================');
 
         return $next($request);
     }
